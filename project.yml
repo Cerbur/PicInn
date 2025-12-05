@@ -1,0 +1,59 @@
+name: PicInn
+options:
+  bundleIdPrefix: com.cerbur.picinn
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+packages: {}
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    INFOPLIST_FILE: "$(SRCROOT)/$(TARGET_NAME)/Info.plist"
+    PRODUCT_NAME: PicInn
+targets:
+  PicInn iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Shared
+      - path: iOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cerbur.picinn.ios
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: YES
+        CODE_SIGN_ENTITLEMENTS: iOS/PicInn.entitlements
+    info:
+      path: iOS/Info.plist
+      properties:
+        CFBundleDisplayName: PicInn
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: YES
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSPhotoLibraryUsageDescription: "用于选择照片并添加水印。"
+  PicInn macOS:
+    type: application
+    platform: macOS
+    sources:
+      - path: Shared
+      - path: macOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cerbur.picinn.macos
+    info:
+      path: macOS/Info.plist
+      properties:
+        CFBundleDisplayName: PicInn
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        NSPhotoLibraryUsageDescription: "用于选择照片并添加水印。"
+

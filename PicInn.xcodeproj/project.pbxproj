@@ -1,0 +1,404 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0264DB41218FD6B67505F164 /* PhotoProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1798FD3BB8FBC83BF65B63EE /* PhotoProcessor.swift */; };
+		0AF714BF2CC3E5A573276F35 /* Platform+Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = E427B86708FB81EA4EE409FC /* Platform+Image.swift */; };
+		20F33C21BC02F0C4FD739C44 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3A69EFF70CCAE2249122CDE /* ContentView.swift */; };
+		43F39FFAECB50B883F1ACED2 /* Platform+Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = E427B86708FB81EA4EE409FC /* Platform+Image.swift */; };
+		6DFF0D8F418A36B4114F599E /* PhotoMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748B51D37D2B60D7CFB42100 /* PhotoMetadata.swift */; };
+		7C7D0ED483E87F29F92BA821 /* PicInnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CAE663DAB43800391EC5450 /* PicInnApp.swift */; };
+		7F499673E3A0EDE5189192FF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3A69EFF70CCAE2249122CDE /* ContentView.swift */; };
+		871BCACE941FDFC61BD19B1A /* WatermarkRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9C80625FF62DCAFD74A398 /* WatermarkRenderer.swift */; };
+		B5D601C43533AB2FC96E070B /* PhotoMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748B51D37D2B60D7CFB42100 /* PhotoMetadata.swift */; };
+		CF93ED83A927996BC33468AD /* PhotoProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1798FD3BB8FBC83BF65B63EE /* PhotoProcessor.swift */; };
+		ECD7D92923A5833C78218508 /* WatermarkRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9C80625FF62DCAFD74A398 /* WatermarkRenderer.swift */; };
+		FD77F2A6002EEB0C60D77751 /* PicInnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CAE663DAB43800391EC5450 /* PicInnApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1798FD3BB8FBC83BF65B63EE /* PhotoProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoProcessor.swift; sourceTree = "<group>"; };
+		3F5665CC8CC77B21DB1078EB /* PicInn iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "PicInn iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CAE663DAB43800391EC5450 /* PicInnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicInnApp.swift; sourceTree = "<group>"; };
+		52960329C8C6AD67C2AECE30 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		548DD7C11C524914617A0426 /* PicInn.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PicInn.entitlements; sourceTree = "<group>"; };
+		748B51D37D2B60D7CFB42100 /* PhotoMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoMetadata.swift; sourceTree = "<group>"; };
+		96D1672FD4DAB1AD0C19A8FA /* PicInn macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PicInn macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A3A69EFF70CCAE2249122CDE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CA9C80625FF62DCAFD74A398 /* WatermarkRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatermarkRenderer.swift; sourceTree = "<group>"; };
+		E427B86708FB81EA4EE409FC /* Platform+Image.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Platform+Image.swift"; sourceTree = "<group>"; };
+		FC151C861BF1141196103722 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		02982884F211C10571948808 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				52960329C8C6AD67C2AECE30 /* Info.plist */,
+				548DD7C11C524914617A0426 /* PicInn.entitlements */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		068E561A980D3F1CE980ABD5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3F5665CC8CC77B21DB1078EB /* PicInn iOS.app */,
+				96D1672FD4DAB1AD0C19A8FA /* PicInn macOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2C1CBDB65DAFA351995505FF = {
+			isa = PBXGroup;
+			children = (
+				02982884F211C10571948808 /* iOS */,
+				E7C7194A95BF1F35A2BC2065 /* macOS */,
+				57A1E312F3FA6C0EDD717B79 /* Shared */,
+				068E561A980D3F1CE980ABD5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		57A1E312F3FA6C0EDD717B79 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A3A69EFF70CCAE2249122CDE /* ContentView.swift */,
+				748B51D37D2B60D7CFB42100 /* PhotoMetadata.swift */,
+				1798FD3BB8FBC83BF65B63EE /* PhotoProcessor.swift */,
+				4CAE663DAB43800391EC5450 /* PicInnApp.swift */,
+				E427B86708FB81EA4EE409FC /* Platform+Image.swift */,
+				CA9C80625FF62DCAFD74A398 /* WatermarkRenderer.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		E7C7194A95BF1F35A2BC2065 /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				FC151C861BF1141196103722 /* Info.plist */,
+			);
+			path = macOS;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C19F2283FD0D75721A233C3F /* PicInn iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 93836F46FD8A8FA8DC60DAFC /* Build configuration list for PBXNativeTarget "PicInn iOS" */;
+			buildPhases = (
+				0F9B4AF36334D211F084C8CB /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PicInn iOS";
+			packageProductDependencies = (
+			);
+			productName = "PicInn iOS";
+			productReference = 3F5665CC8CC77B21DB1078EB /* PicInn iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FCC00A8A520CFE8DF153E286 /* PicInn macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49CF24A1B3EB3B09EDA12672 /* Build configuration list for PBXNativeTarget "PicInn macOS" */;
+			buildPhases = (
+				687ADEF5C0DD0C4A3311F796 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PicInn macOS";
+			packageProductDependencies = (
+			);
+			productName = "PicInn macOS";
+			productReference = 96D1672FD4DAB1AD0C19A8FA /* PicInn macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D358FB2A9081CA12E4F3171E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = 6DC666D3E4D596B9C79D5EB1 /* Build configuration list for PBXProject "PicInn" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 2C1CBDB65DAFA351995505FF;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C19F2283FD0D75721A233C3F /* PicInn iOS */,
+				FCC00A8A520CFE8DF153E286 /* PicInn macOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0F9B4AF36334D211F084C8CB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				20F33C21BC02F0C4FD739C44 /* ContentView.swift in Sources */,
+				6DFF0D8F418A36B4114F599E /* PhotoMetadata.swift in Sources */,
+				CF93ED83A927996BC33468AD /* PhotoProcessor.swift in Sources */,
+				7C7D0ED483E87F29F92BA821 /* PicInnApp.swift in Sources */,
+				43F39FFAECB50B883F1ACED2 /* Platform+Image.swift in Sources */,
+				ECD7D92923A5833C78218508 /* WatermarkRenderer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		687ADEF5C0DD0C4A3311F796 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F499673E3A0EDE5189192FF /* ContentView.swift in Sources */,
+				B5D601C43533AB2FC96E070B /* PhotoMetadata.swift in Sources */,
+				0264DB41218FD6B67505F164 /* PhotoProcessor.swift in Sources */,
+				FD77F2A6002EEB0C60D77751 /* PicInnApp.swift in Sources */,
+				0AF714BF2CC3E5A573276F35 /* Platform+Image.swift in Sources */,
+				871BCACE941FDFC61BD19B1A /* WatermarkRenderer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		49AF7AC41189DC06B1A3274A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/$(TARGET_NAME)/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = PicInn;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		5D7329C1976B97F9AA0B55D2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = iOS/PicInn.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cerbur.picinn.ios;
+				SDKROOT = iphoneos;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6D2DADA75B96033728966BC5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = macOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cerbur.picinn.macos;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		8FF438FDEA3AB77096DC561A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = macOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cerbur.picinn.macos;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		ECCA3DF73BC5F0309383A345 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = iOS/PicInn.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cerbur.picinn.ios;
+				SDKROOT = iphoneos;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F2D3866CAEF3B6933D02DEE0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/$(TARGET_NAME)/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = PicInn;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		49CF24A1B3EB3B09EDA12672 /* Build configuration list for PBXNativeTarget "PicInn macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8FF438FDEA3AB77096DC561A /* Debug */,
+				6D2DADA75B96033728966BC5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6DC666D3E4D596B9C79D5EB1 /* Build configuration list for PBXProject "PicInn" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49AF7AC41189DC06B1A3274A /* Debug */,
+				F2D3866CAEF3B6933D02DEE0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		93836F46FD8A8FA8DC60DAFC /* Build configuration list for PBXNativeTarget "PicInn iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5D7329C1976B97F9AA0B55D2 /* Debug */,
+				ECCA3DF73BC5F0309383A345 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D358FB2A9081CA12E4F3171E /* Project object */;
+}
