@@ -342,19 +342,20 @@ private struct CarouselPreview: View {
             #else
             // macOS: 更宽敞的布局
             VStack(spacing: 12) {
-                // 页码指示器
-                HStack(spacing: 12) {
+                // 页码指示器 - 上面显示数字，下面是进度条
+                HStack(spacing: 8) {
                     ForEach(0..<processor.photos.count, id: \.self) { index in
-                        VStack(spacing: 6) {
+                        VStack(spacing: 2) {
                             Text("\(index + 1)")
-                                .font(.system(size: 11, weight: index == processor.currentIndex ? .semibold : .regular))
-                                .foregroundColor(index == processor.currentIndex ? .white : .secondary)
+                                .font(.system(size: 10, weight: index == processor.currentIndex ? .semibold : .regular))
+                                .foregroundColor(index == processor.currentIndex ? .blue : .secondary)
+                                .frame(height: 14)
                             
-                            RoundedRectangle(cornerRadius: 2)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(index == processor.currentIndex ? Color.blue : Color.gray.opacity(0.3))
-                                .frame(height: 3)
+                                .frame(height: 2)
                         }
-                        .frame(height: 30)
+                        .frame(height: 24)
                         .onTapGesture {
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 processor.currentIndex = index
@@ -364,7 +365,7 @@ private struct CarouselPreview: View {
                     Spacer()
                 }
                 
-                // 控制按钮和提示文字
+                // 控制按钮
                 HStack(spacing: 12) {
                     Button {
                         if processor.currentIndex > 0 {
@@ -380,10 +381,6 @@ private struct CarouselPreview: View {
                             .background(Circle().fill(Color.white.opacity(0.1)))
                     }
                     .disabled(processor.currentIndex == 0)
-                    
-                    Text("双指滑动或点击页码切换")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                     
                     Spacer()
                     
