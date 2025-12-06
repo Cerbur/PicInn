@@ -12,29 +12,35 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 24) {
+                VStack(spacing: 12) {
                     heroHeader
                     
                     GlassCard {
-                        SectionHeader(icon: "photo.stack", title: "素材管理", subtitle: "批量导入并为作品添加品牌标签")
-                        pickerRow
-                        brandField
+                        VStack(spacing: 10) {
+                            SectionHeader(icon: "photo.stack", title: "素材管理", subtitle: "批量导入并为作品添加品牌标签")
+                            pickerRow
+                            brandField
+                        }
                     }
                     
                     GlassCard {
-                        SectionHeader(icon: "rectangle.stack.person.crop", title: "实时预览", subtitle: "以原始分辨率查看水印效果")
-                        previewSection(containerSize: geometry.size)
+                        VStack(spacing: 10) {
+                            SectionHeader(icon: "rectangle.stack.person.crop", title: "实时预览", subtitle: "以原始分辨率查看水印效果")
+                            previewSection(containerSize: geometry.size)
+                        }
                     }
                     
                     GlassCard {
-                        SectionHeader(icon: "sparkles", title: "生成与导出", subtitle: "统一的水印参数与快速分享")
-                        actionSection
+                        VStack(spacing: 10) {
+                            SectionHeader(icon: "sparkles", title: "生成与导出", subtitle: "统一的水印参数与快速分享")
+                            actionSection
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.top, geometry.safeAreaInsets.top)
-                .padding(.bottom, geometry.safeAreaInsets.bottom + 16)
-                .padding(.horizontal, max(geometry.safeAreaInsets.leading + 16, 16))
+                .padding(.top, max(geometry.safeAreaInsets.top + 8, 8))
+                .padding(.bottom, max(geometry.safeAreaInsets.bottom + 8, 8))
+                .padding(.horizontal, max(geometry.safeAreaInsets.leading + 12, 12))
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
             .background(backgroundLayer.ignoresSafeArea())
@@ -42,32 +48,33 @@ struct ContentView: View {
     }
 
     private var brandField: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text("品牌标签")
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
             
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Image(systemName: "tag")
                     .foregroundColor(accentColor)
-                    .padding(10)
+                    .font(.caption2)
+                    .padding(7)
                     .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .fill(accentColor.opacity(0.15))
                     )
                 
                 TextField("例如 Nikon / Canon / Sony", text: $brand)
                     .textFieldStyle(.plain)
-                    .font(.headline)
+                    .font(.subheadline)
             }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.white.opacity(0.06))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(Color.white.opacity(0.1), lineWidth: 1)
             )
         }
@@ -80,30 +87,33 @@ struct ContentView: View {
             matching: .images,
             photoLibrary: .shared()
         ) {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 10) {
                 Image(systemName: "photo.on.rectangle")
-                    .font(.title3.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
+                    .frame(width: 38, height: 38)
                     .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .fill(Color.white.opacity(0.12))
                     )
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(processor.isLoadingSelection ? "导入中…" : "选择照片")
-                        .font(.headline)
-                    Text("上传支持 RAW、HEIC、JPEG 等主流格式。导入后 PicInn 会解析 EXIF 信息用于水印。")
-                        .font(.footnote)
+                        .font(.subheadline.weight(.semibold))
+                    Text("RAW、HEIC、JPEG 格式，自动解析 EXIF")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
                 Spacer()
                 if processor.isLoadingSelection {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
+                        .scaleEffect(0.7)
                 }
             }
-            .padding()
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
@@ -121,7 +131,7 @@ struct ContentView: View {
     private func previewSection(containerSize: CGSize) -> some View {
         let responsiveSize = CGSize(
             width: containerSize.width,
-            height: max(containerSize.height, 500)
+            height: max(containerSize.height * 0.45, 240)
         )
         if !processor.photos.isEmpty {
             CarouselPreview(
@@ -146,28 +156,28 @@ struct ContentView: View {
     }
 
     private var actionSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(alignment: .center, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
                 Button {
                     processor.renderWatermarked(brand: brand.isEmpty ? "Nikon" : brand)
                 } label: {
                     Label(processor.isRendering ? "生成中…" : "生成水印", systemImage: "sparkles")
-                        .font(.headline)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: 220)
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: 140)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(accentColor)
                 .disabled(processor.photos.isEmpty || processor.isRendering || processor.isLoadingSelection)
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("输出为高质量 JPEG，保留原始 EXIF 信息。")
-                        .font(.subheadline)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(processor.photos.isEmpty ? "先导入照片" : "输出 JPEG")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
-                    if processor.photos.isEmpty {
-                        Text("提示：先导入照片以启用生成。")
-                            .font(.footnote)
+                    if !processor.photos.isEmpty {
+                        Text("\(processor.photos.count) 张待处理")
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
                 }
@@ -211,23 +221,23 @@ struct ContentView: View {
     }
     
     private var heroHeader: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 6) {
             Text("PicInn")
-                .font(.system(size: 44, weight: .bold, design: .rounded))
+                .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
-                .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 8)
+                .shadow(color: Color.black.opacity(0.25), radius: 8, x: 0, y: 4)
             
             Text("Liquid Glass · Batch Watermark Studio")
-                .font(.headline)
+                .font(.caption.weight(.semibold))
                 .foregroundColor(.white.opacity(0.9))
             
-            Text("导入、预览、导出，一气呵成。以原图分辨率保留每个瞬间的质感，以及你钟爱的相机信息。")
-                .font(.subheadline)
+            Text("导入、预览、导出，一气呵成。以原图分辨率保留每个瞬间的质感。")
+                .font(.caption2)
                 .foregroundColor(.white.opacity(0.8))
-                .frame(maxWidth: 620, alignment: .leading)
+                .lineLimit(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 8)
+        .padding(.bottom, 4)
     }
     
     private var backgroundLayer: some View {
@@ -252,40 +262,39 @@ struct ContentView: View {
     }
     
     private func previewStateCard(icon: String, title: String, message: String, progress: Double? = nil) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 44))
+                .font(.system(size: 36))
                 .foregroundColor(accentColor)
-                .padding(18)
+                .padding(14)
                 .background(
-                    Circle()
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(accentColor.opacity(0.15))
                 )
             
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Text(title)
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                 Text(message)
-                    .font(.subheadline)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
+                    .lineLimit(2)
             }
             
             if let progress {
                 ProgressView(value: progress, total: 1.0)
-                    .progressViewStyle(.linear)
-                    .tint(accentColor)
-                    .padding(.top, 4)
+                    .padding(.horizontal)
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 360)
-        .padding()
+        .frame(minHeight: 200)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
     }
@@ -301,8 +310,10 @@ private struct CarouselPreview: View {
     let brand: String
     let containerSize: CGSize
     @GestureState private var dragTranslation: CGFloat = 0
+    @State private var isDragging: Bool = false
     #if os(macOS)
     @State private var trackpadTranslation: CGFloat = 0
+    @State private var trackpadIsDragging: Bool = false
     #endif
     
     private var previewAreaHeight: CGFloat {
@@ -365,9 +376,9 @@ private struct CarouselPreview: View {
             let pageHeight = previewAreaHeight
             let baseOffset = -CGFloat(processor.currentIndex) * pageWidth
             #if os(macOS)
-            let currentTranslation = trackpadTranslation
+            let currentTranslation = isDragging || trackpadIsDragging ? (trackpadTranslation) : 0
             #else
-            let currentTranslation = dragTranslation
+            let currentTranslation = isDragging ? dragTranslation : 0
             #endif
             
             HStack(alignment: .center, spacing: 0) {
@@ -382,22 +393,28 @@ private struct CarouselPreview: View {
             .frame(width: availableWidth, alignment: .center)
             #if os(iOS)
             .gesture(
-                DragGesture(minimumDistance: 10)
+                DragGesture(minimumDistance: 5)
                     .updating($dragTranslation) { value, state, _ in
                         state = rubberBand(value.translation.width, pageWidth: pageWidth)
                     }
+                    .onChanged { _ in
+                        isDragging = true
+                    }
                     .onEnded { value in
-                        handleDragEnd(translation: value.translation.width, pageWidth: pageWidth)
+                        isDragging = false
+                        handleDragEnd(translation: value.translation.width, velocity: value.predictedEndLocation.x - value.location.x, pageWidth: pageWidth)
                     }
             )
             #else
             .overlay(
                 TrackpadGestureBridge(
                     onChanged: { translation in
+                        trackpadIsDragging = true
                         trackpadTranslation = rubberBand(translation, pageWidth: pageWidth)
                     },
                     onEnded: { translation in
-                        handleDragEnd(translation: translation, pageWidth: pageWidth)
+                        trackpadIsDragging = false
+                        handleDragEnd(translation: translation, velocity: 0, pageWidth: pageWidth)
                     }
                 )
             )
@@ -426,22 +443,47 @@ private struct CarouselPreview: View {
         }
     }
     
-    private func handleDragEnd(translation: CGFloat, pageWidth: CGFloat) {
-        let threshold = max(pageWidth * 0.12, 45)
-        let limitedTranslation = clamp(translation, limit: pageWidth * 0.95)
-        let effectiveTranslation = limitedTranslation
+    private func handleDragEnd(translation: CGFloat, velocity: CGFloat, pageWidth: CGFloat) {
+        // 速度阈值：像素/毫秒，用于判断快速滑动
+        let velocityThreshold: CGFloat = 0.5
+        let isQuickSwipe = abs(velocity) > velocityThreshold
+        
+        // 拖动阈值：页面宽度的百分比
+        let dragThreshold = pageWidth * 0.25
+        
         var newIndex = processor.currentIndex
-        if effectiveTranslation < -threshold {
-            newIndex = min(processor.currentIndex + 1, processor.photos.count - 1)
-        } else if effectiveTranslation > threshold {
-            newIndex = max(processor.currentIndex - 1, 0)
+        let limitedTranslation = clamp(translation, limit: pageWidth * 0.95)
+        
+        if isQuickSwipe {
+            // 快速滑动：根据方向直接切换
+            if velocity > 0 {
+                // 向右快速滑动 -> 上一张
+                newIndex = max(processor.currentIndex - 1, 0)
+            } else {
+                // 向左快速滑动 -> 下一张
+                newIndex = min(processor.currentIndex + 1, processor.photos.count - 1)
+            }
+        } else {
+            // 缓慢拖动：根据阈值判断
+            if limitedTranslation < -dragThreshold {
+                // 向左拖动超过阈值 -> 下一张
+                newIndex = min(processor.currentIndex + 1, processor.photos.count - 1)
+            } else if limitedTranslation > dragThreshold {
+                // 向右拖动超过阈值 -> 上一张
+                newIndex = max(processor.currentIndex - 1, 0)
+            }
         }
-        let response = newIndex == processor.currentIndex ? 0.42 : 0.3
-        let damping = newIndex == processor.currentIndex ? 0.88 : 0.76
-        let animation = Animation.interactiveSpring(response: response, dampingFraction: damping, blendDuration: 0.15)
+        
+        // 选择动画参数：切换照片时用更快的动画，回弹时用更柔和的动画
+        let hasChanged = newIndex != processor.currentIndex
+        let response = hasChanged ? 0.35 : 0.5
+        let damping = hasChanged ? 0.82 : 0.85
+        let animation = Animation.interactiveSpring(response: response, dampingFraction: damping, blendDuration: 0.1)
+        
         withAnimation(animation) {
             processor.currentIndex = newIndex
         }
+        
         #if os(macOS)
         withAnimation(animation) {
             trackpadTranslation = 0
@@ -456,14 +498,15 @@ private struct CarouselPreview: View {
         let pullingPrev = translation > 0
         let pullingNext = translation < 0
         
-        var adjusted = translation
+        // 在边界处应用橡皮筋效果
         if (isAtFirst && pullingPrev) || (isAtLast && pullingNext) {
-            let resistance: CGFloat = 0.55
+            let resistance: CGFloat = 0.4
             let displacement = abs(translation)
-            let constrained = (resistance * displacement * pageWidth) / (pageWidth + resistance * displacement)
-            adjusted = translation > 0 ? constrained : -constrained
+            let constrained = displacement / (1.0 + displacement / pageWidth * resistance)
+            return translation > 0 ? constrained : -constrained
         }
-        return clamp(adjusted, limit: pageWidth * 0.95)
+        
+        return clamp(translation, limit: pageWidth * 0.95)
     }
     
     private func clamp(_ value: CGFloat, limit: CGFloat) -> CGFloat {
@@ -510,21 +553,22 @@ private struct SectionHeader: View {
     let subtitle: String
     
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 10) {
             Image(systemName: icon)
-                .font(.title3.bold())
+                .font(.headline.bold())
                 .foregroundColor(.white)
-                .padding(10)
+                .padding(8)
                 .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .fill(Color.white.opacity(0.12))
                 )
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.title3.bold())
+                    .font(.subheadline.bold())
                 Text(subtitle)
-                    .font(.subheadline)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
             }
             Spacer()
         }
@@ -540,17 +584,17 @@ private struct GlassCard<Content: View>: View {
     
     var body: some View {
         content
-            .padding(24)
+            .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 32, style: .continuous)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(.thinMaterial)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .stroke(Color.white.opacity(0.15), lineWidth: 1)
                     )
             )
-            .shadow(color: Color.black.opacity(0.25), radius: 30, x: 0, y: 25)
+            .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 8)
     }
 }
 
@@ -568,22 +612,23 @@ private struct MetricPill: View {
     let value: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 1) {
             Text(label.uppercased())
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.white.opacity(0.6))
             Text(value)
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
                 .foregroundColor(.white)
         }
-        .padding(.vertical, 10)
-        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color.white.opacity(0.08))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
         )
     }

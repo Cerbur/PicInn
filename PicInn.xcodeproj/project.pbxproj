@@ -19,6 +19,7 @@
 		CF93ED83A927996BC33468AD /* PhotoProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1798FD3BB8FBC83BF65B63EE /* PhotoProcessor.swift */; };
 		ECD7D92923A5833C78218508 /* WatermarkRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9C80625FF62DCAFD74A398 /* WatermarkRenderer.swift */; };
 		FD77F2A6002EEB0C60D77751 /* PicInnApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CAE663DAB43800391EC5450 /* PicInnApp.swift */; };
+		EBB3A0B627CFE1D200000002 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EBB3A0B527CFE1D100000001 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +34,7 @@
 		CA9C80625FF62DCAFD74A398 /* WatermarkRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatermarkRenderer.swift; sourceTree = "<group>"; };
 		E427B86708FB81EA4EE409FC /* Platform+Image.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Platform+Image.swift"; sourceTree = "<group>"; };
 		FC151C861BF1141196103722 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		EBB3A0B527CFE1D100000001 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -41,6 +43,7 @@
 			children = (
 				52960329C8C6AD67C2AECE30 /* Info.plist */,
 				548DD7C11C524914617A0426 /* PicInn.entitlements */,
+				EBB3A0B527CFE1D100000001 /* LaunchScreen.storyboard */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -92,6 +95,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 93836F46FD8A8FA8DC60DAFC /* Build configuration list for PBXNativeTarget "PicInn iOS" */;
 			buildPhases = (
+				EBB3A0B727CFE1D300000003 /* Resources */,
 				0F9B4AF36334D211F084C8CB /* Sources */,
 			);
 			buildRules = (
@@ -178,6 +182,17 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		EBB3A0B727CFE1D300000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EBB3A0B627CFE1D200000002 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		49AF7AC41189DC06B1A3274A /* Debug */ = {
