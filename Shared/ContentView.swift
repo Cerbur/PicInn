@@ -340,59 +340,44 @@ private struct CarouselPreview: View {
             }
             .padding(.horizontal)
             #else
-            // macOS: 更宽敞的布局
-            VStack(spacing: 12) {
-                // 顶部：当前页码显示和进度条
-                VStack(spacing: 8) {
-                    // 当前页码标签
+            // macOS: 简洁的布局
+            VStack(spacing: 8) {
+                // 上方：页码指示器和数字标注
+                VStack(spacing: 6) {
+                    // 数字标注
                     HStack(spacing: 0) {
-                        Text("\(processor.currentIndex + 1)")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.blue)
-                            .frame(width: 28, height: 28)
-                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.blue.opacity(0.2)))
-                        
-                        Spacer()
+                        ForEach(0..<processor.photos.count, id: \.self) { index in
+                            Text("\(index + 1)")
+                                .font(.system(size: 9, weight: index == processor.currentIndex ? .semibold : .regular))
+                                .foregroundColor(index == processor.currentIndex ? .blue : .secondary)
+                                .frame(maxWidth: .infinity)
+                        }
                     }
+                    .frame(height: 14)
                     
                     // 进度条
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            // 背景条
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Color.gray.opacity(0.2))
-                            
-                            // 进度指示
-                            HStack(spacing: 0) {
-                                ForEach(0..<processor.photos.count, id: \.self) { index in
-                                    RoundedRectangle(cornerRadius: 2)
-                                        .fill(index <= processor.currentIndex ? Color.blue : Color.gray.opacity(0.2))
-                                        .frame(width: geometry.size.width / CGFloat(processor.photos.count))
+                    HStack(spacing: 0) {
+                        ForEach(0..<processor.photos.count, id: \.self) { index in
+                            RoundedRectangle(cornerRadius: 1.5)
+                                .fill(index == processor.currentIndex ? Color.blue : Color.gray.opacity(0.2))
+                                .frame(height: 4)
+                                .onTapGesture {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        processor.currentIndex = index
+                                    }
                                 }
+                            if index < processor.photos.count - 1 {
+                                Spacer().frame(width: 2)
                             }
                         }
                     }
-                    .frame(height: 3)
+                    .frame(height: 4)
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.05)))
                 
-                // 下方：进度条显示所有页码
-                HStack(spacing: 4) {
-                    ForEach(0..<processor.photos.count, id: \.self) { index in
-                        RoundedRectangle(cornerRadius: 1.5)
-                            .fill(index == processor.currentIndex ? Color.blue : Color.gray.opacity(0.3))
-                            .frame(height: 2)
-                            .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.25)) {
-                                    processor.currentIndex = index
-                                }
-                            }
-                    }
-                }
-                .padding(.horizontal)
-                .frame(height: 12)
-                
-                // 控制按钮
+                // 下方：控制按钮
                 HStack(spacing: 12) {
                     Button {
                         if processor.currentIndex > 0 {
@@ -402,9 +387,9 @@ private struct CarouselPreview: View {
                         }
                     } label: {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
-                            .frame(width: 32, height: 32)
+                            .frame(width: 28, height: 28)
                             .background(Circle().fill(Color.white.opacity(0.1)))
                     }
                     .disabled(processor.currentIndex == 0)
@@ -419,13 +404,14 @@ private struct CarouselPreview: View {
                         }
                     } label: {
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
-                            .frame(width: 32, height: 32)
+                            .frame(width: 28, height: 28)
                             .background(Circle().fill(Color.white.opacity(0.1)))
                     }
                     .disabled(processor.currentIndex == processor.photos.count - 1)
                 }
+                .padding(.horizontal, 12)
             }
             .padding(.horizontal)
             #endif
