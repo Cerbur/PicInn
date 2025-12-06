@@ -375,6 +375,7 @@ private struct CarouselPreview: View {
             let rawWidth = max(availableWidth - 32, 220)
             let calculatedPageWidth = min(rawWidth, availableWidth)
             let pageHeight = previewAreaHeight
+            let baseOffset = -CGFloat(processor.currentIndex) * calculatedPageWidth
             
             #if os(macOS)
             let currentTranslation = isDragging || trackpadIsDragging ? (trackpadTranslation) : 0
@@ -382,19 +383,19 @@ private struct CarouselPreview: View {
             let currentTranslation = isDragging ? dragTranslation : 0
             #endif
             
-            ZStack(alignment: .center) {
-                // 只显示当前照片，限制偏移范围不超过页面宽度
-                if processor.currentIndex < processor.photos.count {
+            HStack(alignment: .center, spacing: 0) {
+                ForEach(Array(processor.photos.enumerated()), id: \.element.id) { _, photo in
                     previewPage(
-                        for: processor.photos[processor.currentIndex],
+                        for: photo,
                         maxSize: CGSize(width: calculatedPageWidth, height: pageHeight)
                     )
                     .frame(width: calculatedPageWidth, height: pageHeight)
-                    .offset(x: clampTranslation(currentTranslation, pageWidth: calculatedPageWidth))
                 }
             }
-            .frame(width: availableWidth, alignment: .center)
+            .offset(x: baseOffset + currentTranslation)
+            .frame(width: calculatedPageWidth, alignment: .leading)
             .clipped()
+            .frame(width: availableWidth, alignment: .center)
             #if os(iOS)
             .gesture(
                 DragGesture(minimumDistance: 5)
@@ -457,76 +458,41 @@ private struct CarouselPreview: View {
         let isQuickSwipe = abs(velocity) > velocityThreshold
         
         // 拖动阈值：页面宽度的百分比
-        let dragThreshold = pageWidth * 0.25
+        let dragThreshold = pageWidth * 0.3
         
-        var shouldChangeIndex = false
-        var moveForward = false
+        var newIndex = processor.currentIndex
         
         if isQuickSwipe {
             // 快速滑动：根据方向直接切换
-            moveForward = velocity < 0
-            shouldChangeIndex = true
+            if velocity > 0 {
+                // 向右快速滑动 -> 上一张
+                newIndex = max(processor.currentIndex - 1, 0)
+            } else {
+                // 向左快速滑动 -> 下一张
+                newIndex = min(processor.currentIndex + 1, processor.photos.count - 1)
+            }
         } else {
             // 缓慢拖动：根据阈值判断
             if translation < -dragThreshold {
                 // 向左拖动超过阈值 -> 下一张
-                moveForward = true
-                shouldChangeIndex = true
+                newIndex = min(processor.currentIndex + 1, processor.photos.count - 1)
             } else if translation > dragThreshold {
                 // 向右拖动超过阈值 -> 上一张
-                moveForward = false
-                shouldChangeIndex = true
-            }
-        }
-        
-        if shouldChangeIndex {
-            // 确定新的索引
-            var newIndex = processor.currentIndex
-            if moveForward {
-                newIndex = min(processor.currentIndex + 1, processor.photos.count - 1)
-            } else {
                 newIndex = max(processor.currentIndex - 1, 0)
             }
-            
-            // 使用带动画的方式改变索引
-            withAnimation(.easeInOut(duration: 0.3)) {
-                processor.currentIndex = newIndex
-            }
         }
         
-        // 恢复拖动偏移
+        // 使用动画改变索引
+        withAnimation(.easeInOut(duration: 0.25)) {
+            processor.currentIndex = newIndex
+        }
+        
+        // macOS 平台恢复拖动偏移
         #if os(macOS)
         withAnimation(.easeOut(duration: 0.2)) {
             trackpadTranslation = 0
         }
         #endif
-    }
-    
-    private func clampTranslation(_ translation: CGFloat, pageWidth: CGFloat) -> CGFloat {
-        // 限制拖动范围为页面宽度的 50%，提供橡皮筋效果
-        let maxTranslation = pageWidth * 0.5
-        
-        let isAtFirst = processor.currentIndex == 0
-        let isAtLast = processor.currentIndex == processor.photos.count - 1
-        
-        if isAtFirst && translation > 0 {
-            // 在首页向右拖动，应用橡皮筋效果
-            return rubberBand(translation, maxLimit: maxTranslation)
-        } else if isAtLast && translation < 0 {
-            // 在末页向左拖动，应用橡皮筋效果
-            return rubberBand(translation, maxLimit: maxTranslation)
-        }
-        
-        // 正常拖动，限制在最大范围内
-        return min(max(translation, -maxTranslation), maxTranslation)
-    }
-    
-    private func rubberBand(_ translation: CGFloat, maxLimit: CGFloat) -> CGFloat {
-        // 橡皮筋效果的数学模型
-        let resistance: CGFloat = 0.4
-        let displacement = abs(translation)
-        let constrained = displacement / (1.0 + displacement / maxLimit * resistance)
-        return translation > 0 ? constrained : -constrained
     }
     
     private func clamp(_ value: CGFloat, limit: CGFloat) -> CGFloat {
