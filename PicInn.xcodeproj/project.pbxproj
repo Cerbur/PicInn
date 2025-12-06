@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -23,12 +23,12 @@
 
 /* Begin PBXFileReference section */
 		1798FD3BB8FBC83BF65B63EE /* PhotoProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoProcessor.swift; sourceTree = "<group>"; };
-		3F5665CC8CC77B21DB1078EB /* PicInn iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "PicInn iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3F5665CC8CC77B21DB1078EB /* PicInn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicInn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CAE663DAB43800391EC5450 /* PicInnApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicInnApp.swift; sourceTree = "<group>"; };
 		52960329C8C6AD67C2AECE30 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		548DD7C11C524914617A0426 /* PicInn.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PicInn.entitlements; sourceTree = "<group>"; };
 		748B51D37D2B60D7CFB42100 /* PhotoMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoMetadata.swift; sourceTree = "<group>"; };
-		96D1672FD4DAB1AD0C19A8FA /* PicInn macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PicInn macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		96D1672FD4DAB1AD0C19A8FA /* PicInn macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "PicInn macOS.app"; path = PicInn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3A69EFF70CCAE2249122CDE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CA9C80625FF62DCAFD74A398 /* WatermarkRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatermarkRenderer.swift; sourceTree = "<group>"; };
 		E427B86708FB81EA4EE409FC /* Platform+Image.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Platform+Image.swift"; sourceTree = "<group>"; };
@@ -48,7 +48,7 @@
 		068E561A980D3F1CE980ABD5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3F5665CC8CC77B21DB1078EB /* PicInn iOS.app */,
+				3F5665CC8CC77B21DB1078EB /* PicInn.app */,
 				96D1672FD4DAB1AD0C19A8FA /* PicInn macOS.app */,
 			);
 			name = Products;
@@ -102,7 +102,7 @@
 			packageProductDependencies = (
 			);
 			productName = "PicInn iOS";
-			productReference = 3F5665CC8CC77B21DB1078EB /* PicInn iOS.app */;
+			productReference = 3F5665CC8CC77B21DB1078EB /* PicInn.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FCC00A8A520CFE8DF153E286 /* PicInn macOS */ = {
@@ -141,7 +141,6 @@
 			);
 			mainGroup = 2C1CBDB65DAFA351995505FF;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -251,6 +250,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = iOS/PicInn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = R6GTN68ATQ;
 				INFOPLIST_FILE = iOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -299,6 +299,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = iOS/PicInn.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = R6GTN68ATQ;
 				INFOPLIST_FILE = iOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
