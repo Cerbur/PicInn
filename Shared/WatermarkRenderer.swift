@@ -361,15 +361,16 @@ struct FusionTemplate: WatermarkTemplate {
         let brandText = brand.isEmpty ? metadata.cameraBrandLabel : brand
         let brandFontSize = 24 * scaleFactor
         let metadataFontSize = 15 * scaleFactor
-        let innerPadding = 18 * scaleFactor
         let textCenterYFromTop = totalHeight - (bottomPadding + bottomBandHeight / 2)
+        let imageLeftX = photoRect.minX
+        let imageRightX = photoRect.maxX
         
         WatermarkRenderer.drawText(
             context: context,
             text: brandText,
             fontSize: brandFontSize,
             weight: .black,
-            at: CGPoint(x: bottomBandRect.minX + innerPadding, y: textCenterYFromTop),
+            at: CGPoint(x: imageLeftX, y: textCenterYFromTop),
             alignment: .leading,
             contextHeight: totalHeight
         )
@@ -381,7 +382,7 @@ struct FusionTemplate: WatermarkTemplate {
                 text: metadataLine,
                 fontSize: metadataFontSize,
                 weight: .medium,
-                at: CGPoint(x: bottomBandRect.maxX - innerPadding, y: textCenterYFromTop),
+                at: CGPoint(x: imageRightX, y: textCenterYFromTop),
                 alignment: .trailing,
                 contextHeight: totalHeight,
                 color: CGColor(gray: 0.25, alpha: 1)
