@@ -26,18 +26,22 @@ struct WatermarkRenderer {
         // 使用原始图片的宽度作为渲染宽度
         let renderWidth = CGFloat(cgImage.width)
         
+        // 基准宽度（用于计算缩放因子）
+        let baseWidth: CGFloat = 1200
+        let scaleFactor = renderWidth / baseWidth
+        
+        // 所有尺寸都根据缩放因子动态调整
+        let imagePadding = 24 * scaleFactor
+        let containerPadding = 64 * scaleFactor
+        let topPadding = 32 * scaleFactor
+        let bottomPadding = 32 * scaleFactor
+        let brandHeight = 50 * scaleFactor
+        let paramsHeight = 30 * scaleFactor
+        let spacing = 24 * scaleFactor
+        
         // 计算图片在渲染宽度下的实际尺寸（保持宽高比）
-        let imagePadding: CGFloat = 24 // 图片左右 padding
-        let containerPadding: CGFloat = 64 // 整体左右 padding
         let imageWidth = renderWidth - containerPadding - (imagePadding * 2)
         let imageHeight = imageWidth / imageAspectRatio
-        
-        // 计算顶部和底部水印区域的高度
-        let topPadding: CGFloat = 32
-        let bottomPadding: CGFloat = 32
-        let brandHeight: CGFloat = 50
-        let paramsHeight: CGFloat = 30
-        let spacing: CGFloat = 24
         
         let totalHeight = topPadding + brandHeight + spacing + imageHeight + spacing + paramsHeight + bottomPadding
         
@@ -59,24 +63,23 @@ struct WatermarkRenderer {
         
         // 布局顺序（从下到上，Core Graphics 坐标系）：
         // Y=0 (底部)
-        // 1. bottomPadding = 32
-        // 2. 参数（paramsHeight = 30，中心在 32 + 15 = 47）
-        // 3. spacing = 24
-        // 4. 图片（imageHeight，底部在 32 + 30 + 24 = 86）
-        // 5. spacing = 24
-        // 6. 品牌标签（brandHeight = 50，中心在 totalHeight - 32 - 25）
-        // 7. topPadding = 32
+        // 1. bottomPadding
+        // 2. 参数（paramsHeight）
+        // 3. spacing
+        // 4. 图片（imageHeight）
+        // 5. spacing
+        // 6. 品牌标签（brandHeight）
+        // 7. topPadding
         // Y=totalHeight (顶部)
         
         // 1. 绘制品牌标签（在照片上方，顶部）
-        // 品牌标签中心距离顶部 = topPadding + brandHeight/2
-        // 转换为从顶部开始的坐标系统
         let brandCenterYFromTop = topPadding + brandHeight / 2
         let brandText = brand.isEmpty ? metadata.cameraBrandLabel : brand
+        let brandFontSize = 26 * scaleFactor
         drawText(
             context: context,
             text: brandText,
-            fontSize: 26,
+            fontSize: brandFontSize,
             weight: .black,
             at: CGPoint(x: renderWidth / 2, y: brandCenterYFromTop),
             alignment: .center,
@@ -84,7 +87,6 @@ struct WatermarkRenderer {
         )
         
         // 2. 绘制原图（在品牌下方，参数上方）
-        // 图片底部距离画布底部 = bottomPadding + paramsHeight + spacing
         let imageBottomY = bottomPadding + paramsHeight + spacing
         let imageRect = CGRect(
             x: containerPadding / 2 + imagePadding,
@@ -95,11 +97,10 @@ struct WatermarkRenderer {
         context.draw(cgImage, in: imageRect)
         
         // 3. 绘制参数信息（在照片下方，底部）
-        // 参数中心距离底部 = bottomPadding + paramsHeight/2
-        // 转换为从顶部开始的坐标系统
         let paramsCenterYFromTop = totalHeight - (bottomPadding + paramsHeight / 2)
         let paramsY = paramsCenterYFromTop
-        let paramsSpacing: CGFloat = 16
+        let paramsFontSize = 14 * scaleFactor
+        let paramsSpacing = 16 * scaleFactor
         let params: [(label: String, value: String)] = [
             ("FL", metadata.focalLength),
             ("Aperture", metadata.aperture),
@@ -110,9 +111,9 @@ struct WatermarkRenderer {
         // 计算总宽度
         var totalWidth: CGFloat = 0
         for param in params {
-            let labelSize = measureText(param.label, fontSize: 14)
-            let valueSize = measureText(param.value, fontSize: 14)
-            totalWidth += labelSize.width + 4 + valueSize.width
+            let labelSize = measureText(param.label, fontSize: paramsFontSize)
+            let valueSize = measureText(param.value, fontSize: paramsFontSize)
+            totalWidth += labelSize.width + (4 * scaleFactor) + valueSize.width
         }
         totalWidth += CGFloat(params.count - 1) * paramsSpacing
         
@@ -120,25 +121,25 @@ struct WatermarkRenderer {
         
         for (index, param) in params.enumerated() {
             // 绘制标签（灰色）
-            let labelSize = measureText(param.label, fontSize: 14)
+            let labelSize = measureText(param.label, fontSize: paramsFontSize)
             drawText(
                 context: context,
                 text: param.label,
-                fontSize: 14,
+                fontSize: paramsFontSize,
                 weight: .medium,
                 at: CGPoint(x: currentX + labelSize.width / 2, y: paramsY),
                 alignment: .center,
                 contextHeight: totalHeight,
                 color: CGColor(gray: 0.5, alpha: 1)
             )
-            currentX += labelSize.width + 4
+            currentX += labelSize.width + (4 * scaleFactor)
             
             // 绘制值（黑色）
-            let valueSize = measureText(param.value, fontSize: 14)
+            let valueSize = measureText(param.value, fontSize: paramsFontSize)
             drawText(
                 context: context,
                 text: param.value,
-                fontSize: 14,
+                fontSize: paramsFontSize,
                 weight: .medium,
                 at: CGPoint(x: currentX + valueSize.width / 2, y: paramsY),
                 alignment: .center,
@@ -285,8 +286,13 @@ struct WatermarkView: View {
         CGFloat(platformImage.cgImageSafe?.width ?? 1200)
     }
     
+    // 基准宽度为 1200，基于此计算缩放因子
+    private var resolutionScaleFactor: CGFloat {
+        baseRenderWidth / 1200.0
+    }
+    
     private var baseImageWidth: CGFloat {
-        baseRenderWidth - 64 - (24 * 2)
+        (baseRenderWidth - 64 * resolutionScaleFactor - (24 * 2 * resolutionScaleFactor))
     }
     
     private var baseImageHeight: CGFloat {
@@ -294,7 +300,7 @@ struct WatermarkView: View {
     }
     
     private var baseTotalHeight: CGFloat {
-        32 + 50 + 24 + baseImageHeight + 24 + 30 + 32
+        (32 + 50 + 24 + 30 + 32) * resolutionScaleFactor + baseImageHeight + (24 * 2) * resolutionScaleFactor
     }
     
     // 使用与渲染完全相同的布局计算逻辑
@@ -314,17 +320,17 @@ struct WatermarkView: View {
     }
     
     // 按比例缩放后的尺寸（与生成代码完全一致的计算逻辑）
-    private var scaledTopPadding: CGFloat { 32 * scaleFactor }
-    private var scaledBottomPadding: CGFloat { 32 * scaleFactor }
-    private var scaledBrandHeight: CGFloat { 50 * scaleFactor }
-    private var scaledParamsHeight: CGFloat { 30 * scaleFactor }
-    private var scaledSpacing: CGFloat { 24 * scaleFactor }
-    private var scaledImagePadding: CGFloat { 24 * scaleFactor }
-    private var scaledSidePadding: CGFloat { 32 * scaleFactor }
+    private var scaledTopPadding: CGFloat { 32 * scaleFactor * resolutionScaleFactor }
+    private var scaledBottomPadding: CGFloat { 32 * scaleFactor * resolutionScaleFactor }
+    private var scaledBrandHeight: CGFloat { 50 * scaleFactor * resolutionScaleFactor }
+    private var scaledParamsHeight: CGFloat { 30 * scaleFactor * resolutionScaleFactor }
+    private var scaledSpacing: CGFloat { 24 * scaleFactor * resolutionScaleFactor }
+    private var scaledImagePadding: CGFloat { 24 * scaleFactor * resolutionScaleFactor }
+    private var scaledSidePadding: CGFloat { 32 * scaleFactor * resolutionScaleFactor }
     
     private var imageWidth: CGFloat {
         // 与生成代码完全一致：baseRenderWidth - 64 - 48
-        (baseRenderWidth - 64 - (24 * 2)) * scaleFactor
+        (baseRenderWidth - 64 * resolutionScaleFactor - (24 * 2 * resolutionScaleFactor)) * scaleFactor
     }
     
     private var imageHeight: CGFloat {
@@ -332,15 +338,15 @@ struct WatermarkView: View {
     }
     
     private var brandFontSize: CGFloat {
-        26 * scaleFactor
+        26 * scaleFactor * resolutionScaleFactor
     }
     
     private var paramsFontSize: CGFloat {
-        14 * scaleFactor
+        14 * scaleFactor * resolutionScaleFactor
     }
     
     private var paramsSpacing: CGFloat {
-        16 * scaleFactor
+        16 * scaleFactor * resolutionScaleFactor
     }
 
     var body: some View {
