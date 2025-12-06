@@ -363,23 +363,25 @@ private struct CarouselPreview: View {
     
     @ViewBuilder
     private var previewContent: some View {
-        TabView(selection: $processor.currentIndex) {
-            ForEach(Array(processor.photos.enumerated()), id: \.element.id) { index, photo in
-                previewPage(
-                    for: photo,
-                    maxSize: CGSize(
-                        width: UIScreen.main.bounds.width - 64,
-                        height: previewAreaHeight
+        GeometryReader { geometry in
+            TabView(selection: $processor.currentIndex) {
+                ForEach(Array(processor.photos.enumerated()), id: \.element.id) { index, photo in
+                    previewPage(
+                        for: photo,
+                        maxSize: CGSize(
+                            width: max(geometry.size.width - 64, 220),
+                            height: previewAreaHeight
+                        )
                     )
-                )
-                .tag(index)
+                    .tag(index)
+                }
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            #if os(iOS)
+            .indexViewStyle(.page(backgroundDisplayMode: .never))
+            #endif
         }
         .frame(height: previewAreaHeight)
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        #if os(iOS)
-        .indexViewStyle(.page(backgroundDisplayMode: .never))
-        #endif
     }
     
     @ViewBuilder
