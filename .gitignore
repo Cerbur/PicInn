@@ -36,7 +36,6 @@ Cartfile.resolved
 .vscode/
 *.swp
 *.swo
-*~
 
 # Logs
 *.log
