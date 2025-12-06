@@ -381,10 +381,47 @@ private struct CarouselPreview: View {
             .indexViewStyle(.page(backgroundDisplayMode: .never))
             #else
             .scrollTargetBehavior(.paging)
+            .gesture(
+                MagnificationGesture()
+                    .onChanged { _ in }
+                    .onEnded { _ in }
+            )
+            .overlay(
+                TrackpadGestureBridge(
+                    onChanged: { translation in
+                        // 处理触摸板滑动中
+                    },
+                    onEnded: { translation in
+                        handleTrackpadSwipe(translation: translation)
+                    }
+                )
+            )
             #endif
         }
         .frame(height: previewAreaHeight)
     }
+    
+    #if os(macOS)
+    private func handleTrackpadSwipe(translation: CGFloat) {
+        let threshold: CGFloat = 10 // 最小滑动距离
+        
+        if translation < -threshold {
+            // 向左滑动 -> 下一张
+            if processor.currentIndex < processor.photos.count - 1 {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    processor.currentIndex += 1
+                }
+            }
+        } else if translation > threshold {
+            // 向右滑动 -> 上一张
+            if processor.currentIndex > 0 {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    processor.currentIndex -= 1
+                }
+            }
+        }
+    }
+    #endif
     
     @ViewBuilder
     private func previewPage(for photo: PhotoItem, maxSize: CGSize) -> some View {
