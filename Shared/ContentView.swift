@@ -342,41 +342,6 @@ private struct CarouselPreview: View {
             #else
             // macOS: 简洁的布局
             VStack(spacing: 8) {
-                // 上方：页码指示器和数字标注
-                VStack(spacing: 6) {
-                    // 数字标注
-                    HStack(spacing: 0) {
-                        ForEach(0..<processor.photos.count, id: \.self) { index in
-                            Text("\(index + 1)")
-                                .font(.system(size: 9, weight: index == processor.currentIndex ? .semibold : .regular))
-                                .foregroundColor(index == processor.currentIndex ? .blue : .secondary)
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .frame(height: 14)
-                    
-                    // 进度条
-                    HStack(spacing: 0) {
-                        ForEach(0..<processor.photos.count, id: \.self) { index in
-                            RoundedRectangle(cornerRadius: 1.5)
-                                .fill(index == processor.currentIndex ? Color.blue : Color.gray.opacity(0.2))
-                                .frame(height: 4)
-                                .onTapGesture {
-                                    withAnimation(.easeInOut(duration: 0.25)) {
-                                        processor.currentIndex = index
-                                    }
-                                }
-                            if index < processor.photos.count - 1 {
-                                Spacer().frame(width: 2)
-                            }
-                        }
-                    }
-                    .frame(height: 4)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color.white.opacity(0.05)))
-                
                 // 下方：控制按钮
                 HStack(spacing: 12) {
                     Button {

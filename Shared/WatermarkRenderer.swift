@@ -11,9 +11,6 @@ import AppKit
 #endif
 
 struct WatermarkRenderer {
-    // 固定的渲染宽度，确保预览和生成一致
-    static let renderWidth: CGFloat = 1200
-    
     @MainActor
     static func render(
         image: PlatformImage,
@@ -26,8 +23,13 @@ struct WatermarkRenderer {
         let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
         let imageAspectRatio = imageSize.width / imageSize.height
         
+        // 使用原始图片的宽度作为渲染宽度
+        let renderWidth = CGFloat(cgImage.width)
+        
         // 计算图片在渲染宽度下的实际尺寸（保持宽高比）
-        let imageWidth = renderWidth - 64 - 24 // 减去左右 padding (32*2) 和图片 padding (12*2)
+        let imagePadding: CGFloat = 24 // 图片左右 padding
+        let containerPadding: CGFloat = 64 // 整体左右 padding
+        let imageWidth = renderWidth - containerPadding - (imagePadding * 2)
         let imageHeight = imageWidth / imageAspectRatio
         
         // 计算顶部和底部水印区域的高度
@@ -85,7 +87,7 @@ struct WatermarkRenderer {
         // 图片底部距离画布底部 = bottomPadding + paramsHeight + spacing
         let imageBottomY = bottomPadding + paramsHeight + spacing
         let imageRect = CGRect(
-            x: 32 + 12,
+            x: containerPadding / 2 + imagePadding,
             y: imageBottomY,
             width: imageWidth,
             height: imageHeight
@@ -278,8 +280,13 @@ struct WatermarkView: View {
         platformImage.aspectRatio
     }
     
+    // 使用原始图片宽度作为基础宽度
+    private var baseRenderWidth: CGFloat {
+        CGFloat(platformImage.cgImageSafe?.width ?? 1200)
+    }
+    
     private var baseImageWidth: CGFloat {
-        WatermarkRenderer.renderWidth - 64 - 24
+        baseRenderWidth - 64 - (24 * 2)
     }
     
     private var baseImageHeight: CGFloat {
@@ -295,7 +302,7 @@ struct WatermarkView: View {
         guard let containerSize = containerSize else {
             return 1.0
         }
-        let widthScale = containerSize.width / WatermarkRenderer.renderWidth
+        let widthScale = containerSize.width / baseRenderWidth
         let heightScale = containerSize.height > 0 ? containerSize.height / baseTotalHeight : 1.0
         let scale = min(widthScale, heightScale, 1.0)
         return max(scale, 0.05)
@@ -303,7 +310,7 @@ struct WatermarkView: View {
     
     // 按比例缩放后的宽度
     private var scaledWidth: CGFloat {
-        WatermarkRenderer.renderWidth * scaleFactor
+        baseRenderWidth * scaleFactor
     }
     
     // 按比例缩放后的尺寸（与生成代码完全一致的计算逻辑）
@@ -312,12 +319,12 @@ struct WatermarkView: View {
     private var scaledBrandHeight: CGFloat { 50 * scaleFactor }
     private var scaledParamsHeight: CGFloat { 30 * scaleFactor }
     private var scaledSpacing: CGFloat { 24 * scaleFactor }
-    private var scaledImagePadding: CGFloat { 12 * scaleFactor }
+    private var scaledImagePadding: CGFloat { 24 * scaleFactor }
     private var scaledSidePadding: CGFloat { 32 * scaleFactor }
     
     private var imageWidth: CGFloat {
-        // 与生成代码完全一致：renderWidth - 64 - 24
-        (WatermarkRenderer.renderWidth - 64 - 24) * scaleFactor
+        // 与生成代码完全一致：baseRenderWidth - 64 - 48
+        (baseRenderWidth - 64 - (24 * 2)) * scaleFactor
     }
     
     private var imageHeight: CGFloat {
@@ -346,7 +353,7 @@ struct WatermarkView: View {
                 .kerning(1.2 * scaleFactor)
                 .frame(height: scaledBrandHeight)
 
-            // 照片（与生成代码完全一致：左右 padding 12，无阴影）
+            // 照片（与生成代码完全一致：左右 padding 24，无阴影）
             Image(platformImage: platformImage)
                 .resizable()
                 .aspectRatio(imageAspectRatio, contentMode: .fit)
