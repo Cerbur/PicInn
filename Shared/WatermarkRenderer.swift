@@ -33,6 +33,7 @@ protocol WatermarkTemplate {
 enum WatermarkTemplateType: String, CaseIterable {
     case normal = "normal"
     case antiNormal = "antiNormal"
+    case fusion = "fusion"
     
     var template: WatermarkTemplate {
         switch self {
@@ -40,6 +41,8 @@ enum WatermarkTemplateType: String, CaseIterable {
             return NormalTemplate()
         case .antiNormal:
             return AntiNormalTemplate()
+        case .fusion:
+            return FusionTemplate()
         }
     }
     
@@ -49,6 +52,8 @@ enum WatermarkTemplateType: String, CaseIterable {
             return "标准"
         case .antiNormal:
             return "反向"
+        case .fusion:
+            return "叠框"
         }
     }
     
@@ -58,6 +63,8 @@ enum WatermarkTemplateType: String, CaseIterable {
             return "品牌在上，参数在下"
         case .antiNormal:
             return "参数在上，品牌在下"
+        case .fusion:
+            return "窄边框，同列信息"
         }
     }
 }
@@ -283,6 +290,120 @@ struct AntiNormalTemplate: WatermarkTemplate {
             alignment: .center,
             contextHeight: totalHeight
         )
+    }
+}
+
+// MARK: - 叠框模板（窄边框 + 同行信息）
+
+struct FusionTemplate: WatermarkTemplate {
+    let id: String = "fusion"
+    let name: String = "叠框"
+    let description: String = "边框 + 同行信息"
+    
+    func render(
+        context: CGContext,
+        image cgImage: CGImage,
+        metadata: PhotoMetadata,
+        brand: String,
+        renderWidth: CGFloat,
+        scaleFactor: CGFloat,
+        totalHeight: CGFloat
+    ) async {
+        let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
+        let imageAspectRatio = imageSize.width / imageSize.height
+        
+        let imagePadding = 24 * scaleFactor
+        let containerPadding = 64 * scaleFactor
+        let topPadding = 32 * scaleFactor
+        let bottomPadding = 32 * scaleFactor
+        let brandHeight = 50 * scaleFactor
+        let paramsHeight = 30 * scaleFactor
+        let spacing = 24 * scaleFactor
+        let borderThickness = spacing
+        let bottomBandHeight = brandHeight + spacing + paramsHeight
+        
+        let imageWidth = renderWidth - containerPadding - (imagePadding * 2)
+        let imageHeight = imageWidth / imageAspectRatio
+        
+        let photoRect = CGRect(
+            x: containerPadding / 2 + imagePadding,
+            y: bottomPadding + bottomBandHeight,
+            width: imageWidth,
+            height: imageHeight
+        )
+        
+        let borderLeftX = photoRect.minX - borderThickness
+        let borderWidth = photoRect.width + (borderThickness * 2)
+        let borderColor = CGColor(gray: 0.93, alpha: 1)
+        
+        // Bottom band for brand + metadata
+        let bottomBandRect = CGRect(
+            x: borderLeftX,
+            y: bottomPadding,
+            width: borderWidth,
+            height: bottomBandHeight
+        )
+        context.setFillColor(borderColor)
+        context.fill(bottomBandRect)
+        
+        // Left / right / top narrow borders
+        let leftBorderRect = CGRect(x: borderLeftX, y: photoRect.minY, width: borderThickness, height: photoRect.height)
+        let rightBorderRect = CGRect(x: photoRect.maxX, y: photoRect.minY, width: borderThickness, height: photoRect.height)
+        let topBorderRect = CGRect(x: borderLeftX, y: photoRect.maxY, width: borderWidth, height: borderThickness)
+        context.fill(leftBorderRect)
+        context.fill(rightBorderRect)
+        context.fill(topBorderRect)
+        
+        // Draw original image
+        context.draw(cgImage, in: photoRect)
+        
+        // Text content inside bottom band
+        let brandText = brand.isEmpty ? metadata.cameraBrandLabel : brand
+        let brandFontSize = 24 * scaleFactor
+        let metadataFontSize = 15 * scaleFactor
+        let innerPadding = 18 * scaleFactor
+        let textCenterYFromTop = totalHeight - (bottomPadding + bottomBandHeight / 2)
+        
+        WatermarkRenderer.drawText(
+            context: context,
+            text: brandText,
+            fontSize: brandFontSize,
+            weight: .black,
+            at: CGPoint(x: bottomBandRect.minX + innerPadding, y: textCenterYFromTop),
+            alignment: .leading,
+            contextHeight: totalHeight
+        )
+        
+        let metadataLine = makeMetadataLine(from: metadata)
+        if !metadataLine.isEmpty {
+            WatermarkRenderer.drawText(
+                context: context,
+                text: metadataLine,
+                fontSize: metadataFontSize,
+                weight: .medium,
+                at: CGPoint(x: bottomBandRect.maxX - innerPadding, y: textCenterYFromTop),
+                alignment: .trailing,
+                contextHeight: totalHeight,
+                color: CGColor(gray: 0.25, alpha: 1)
+            )
+        }
+    }
+    
+    private func makeMetadataLine(from metadata: PhotoMetadata) -> String {
+        var parts: [String] = []
+        if metadata.focalLength != "-" {
+            parts.append("FL \(metadata.focalLength)")
+        }
+        if metadata.aperture != "-" {
+            parts.append(metadata.aperture)
+        }
+        if metadata.shutterSpeed != "-" {
+            parts.append(metadata.shutterSpeed)
+        }
+        if metadata.iso != "-" {
+            parts.append(metadata.iso)
+        }
+        return parts.joined(separator: " · ")
     }
 }
 
@@ -545,58 +666,123 @@ struct WatermarkView: View {
     private var paramsSpacing: CGFloat {
         16 * resolutionScaleFactor * previewScaleFactor
     }
+    
+    private var fusionBottomHeight: CGFloat {
+        brandHeight + paramsHeight + spacing
+    }
+    
+    private var fusionBorderThickness: CGFloat {
+        spacing
+    }
+    
+    private var fusionBorderColor: Color {
+        Color(.sRGBLinear, white: 0.93, opacity: 1)
+    }
+    
+    private var displayBrand: String {
+        brand.isEmpty ? metadata.cameraBrandLabel : brand
+    }
+    
+    private var metadataLine: String {
+        var parts: [String] = []
+        if metadata.focalLength != "-" { parts.append("FL \(metadata.focalLength)") }
+        if metadata.aperture != "-" { parts.append(metadata.aperture) }
+        if metadata.shutterSpeed != "-" { parts.append(metadata.shutterSpeed) }
+        if metadata.iso != "-" { parts.append(metadata.iso) }
+        return parts.joined(separator: " · ")
+    }
 
+    @ViewBuilder
     var body: some View {
-        VStack(spacing: spacing) {
-            if template == .normal {
-                // 标准模板：品牌在上，参数在下
-                Text(brand.isEmpty ? metadata.cameraBrandLabel : brand)
-                    .font(.system(size: brandFontSize, weight: .black))
-                    .foregroundColor(.black)
-                    .kerning(1.2 * previewScaleFactor)
-                    .frame(height: brandHeight)
-                    .lineLimit(1)
-
-                // 照片部分：保持宽高比，在可用空间内完整显示
-                Image(platformImage: platformImage)
-                    .resizable()
-                    .aspectRatio(imageAspectRatio, contentMode: .fit)
-
-                HStack(spacing: paramsSpacing) {
-                    LabelView(title: "FL", value: metadata.focalLength, fontSize: paramsFontSize)
-                    LabelView(title: "Aperture", value: metadata.aperture, fontSize: paramsFontSize)
-                    LabelView(title: "Shutter", value: metadata.shutterSpeed, fontSize: paramsFontSize)
-                    LabelView(title: "ISO", value: metadata.iso.replacingOccurrences(of: "ISO", with: ""), fontSize: paramsFontSize)
-                }
-                .font(.system(size: paramsFontSize, weight: .medium))
-                .frame(height: paramsHeight)
-            } else {
-                // 反向模板：参数在上，品牌在下
-                HStack(spacing: paramsSpacing) {
-                    LabelView(title: "FL", value: metadata.focalLength, fontSize: paramsFontSize)
-                    LabelView(title: "Aperture", value: metadata.aperture, fontSize: paramsFontSize)
-                    LabelView(title: "Shutter", value: metadata.shutterSpeed, fontSize: paramsFontSize)
-                    LabelView(title: "ISO", value: metadata.iso.replacingOccurrences(of: "ISO", with: ""), fontSize: paramsFontSize)
-                }
-                .font(.system(size: paramsFontSize, weight: .medium))
-                .frame(height: paramsHeight)
-
-                // 照片部分：保持宽高比，在可用空间内完整显示
-                Image(platformImage: platformImage)
-                    .resizable()
-                    .aspectRatio(imageAspectRatio, contentMode: .fit)
-
-                Text(brand.isEmpty ? metadata.cameraBrandLabel : brand)
-                    .font(.system(size: brandFontSize, weight: .black))
-                    .foregroundColor(.black)
-                    .kerning(1.2 * previewScaleFactor)
-                    .frame(height: brandHeight)
-                    .lineLimit(1)
+        Group {
+            switch template {
+            case .normal:
+                normalView
+            case .antiNormal:
+                antiNormalView
+            case .fusion:
+                fusionView
             }
         }
         .padding(.horizontal, containerPadding / 2)
         .frame(maxWidth: baseRenderWidth * previewScaleFactor, maxHeight: .infinity, alignment: .top)
         .background(Color.white)
+    }
+    
+    private var normalView: some View {
+        VStack(spacing: spacing) {
+            Text(displayBrand)
+                .font(.system(size: brandFontSize, weight: .black))
+                .foregroundColor(.black)
+                .kerning(1.2 * previewScaleFactor)
+                .frame(height: brandHeight)
+                .lineLimit(1)
+            Image(platformImage: platformImage)
+                .resizable()
+                .aspectRatio(imageAspectRatio, contentMode: .fit)
+            parameterRow
+        }
+    }
+    
+    private var antiNormalView: some View {
+        VStack(spacing: spacing) {
+            parameterRow
+            Image(platformImage: platformImage)
+                .resizable()
+                .aspectRatio(imageAspectRatio, contentMode: .fit)
+            Text(displayBrand)
+                .font(.system(size: brandFontSize, weight: .black))
+                .foregroundColor(.black)
+                .kerning(1.2 * previewScaleFactor)
+                .frame(height: brandHeight)
+                .lineLimit(1)
+        }
+    }
+    
+    private var fusionView: some View {
+        VStack(spacing: 0) {
+            Color.clear.frame(height: topPadding)
+            VStack(spacing: 0) {
+                fusionBorderColor
+                    .frame(height: fusionBorderThickness)
+                HStack(spacing: 0) {
+                    fusionBorderColor
+                        .frame(width: fusionBorderThickness)
+                    Image(platformImage: platformImage)
+                        .resizable()
+                        .aspectRatio(imageAspectRatio, contentMode: .fit)
+                    fusionBorderColor
+                        .frame(width: fusionBorderThickness)
+                }
+                ZStack {
+                    fusionBorderColor
+                    HStack {
+                        Text(displayBrand)
+                            .font(.system(size: brandFontSize * 0.85, weight: .black))
+                            .foregroundColor(.black)
+                        Spacer()
+                        Text(metadataLine)
+                            .font(.system(size: paramsFontSize * 0.95, weight: .medium))
+                            .foregroundColor(.gray)
+                            .lineLimit(1)
+                    }
+                    .padding(.horizontal, fusionBorderThickness)
+                }
+                .frame(height: fusionBottomHeight)
+            }
+            Color.clear.frame(height: bottomPadding)
+        }
+    }
+    
+    private var parameterRow: some View {
+        HStack(spacing: paramsSpacing) {
+            LabelView(title: "FL", value: metadata.focalLength, fontSize: paramsFontSize)
+            LabelView(title: "Aperture", value: metadata.aperture, fontSize: paramsFontSize)
+            LabelView(title: "Shutter", value: metadata.shutterSpeed, fontSize: paramsFontSize)
+            LabelView(title: "ISO", value: metadata.iso.replacingOccurrences(of: "ISO", with: ""), fontSize: paramsFontSize)
+        }
+        .font(.system(size: paramsFontSize, weight: .medium))
+        .frame(height: paramsHeight)
     }
 }
 

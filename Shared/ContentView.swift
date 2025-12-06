@@ -67,6 +67,9 @@ struct ContentView: View {
                 TextField("例如 Nikon / Canon / Sony", text: $brand)
                     .textFieldStyle(.plain)
                     .font(.subheadline)
+                    .onChange(of: brand) { _ in
+                        processor.invalidateRenderedPhotos()
+                    }
             }
             .padding(.vertical, 10)
             .padding(.horizontal, 12)
@@ -86,55 +89,27 @@ struct ContentView: View {
             Text("水印模板")
                 .font(.caption2)
                 .foregroundColor(.secondary)
-            
-            HStack(spacing: 10) {
-                ForEach(WatermarkTemplateType.allCases, id: \.self) { template in
-                    Button {
-                        processor.updateTemplate(template, brand: brand.isEmpty ? "Nikon" : brand)
-                    } label: {
-                        VStack(alignment: .center, spacing: 4) {
-                            Text(template.displayName)
-                                .font(.caption2.weight(.semibold))
-                            Text(template.displayDescription)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 8)
-                        .background(
-                            processor.selectedTemplate == template
-                                ? Color(accentColor).opacity(0.2)
-                                : Color.white.opacity(0.04)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(
-                                    processor.selectedTemplate == template
-                                        ? accentColor.opacity(0.5)
-                                        : Color.white.opacity(0.1),
-                                    lineWidth: 1
+            GeometryReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(WatermarkTemplateType.allCases, id: \.self) { template in
+                            Button {
+                                processor.updateTemplate(template)
+                            } label: {
+                                TemplateSegmentView(
+                                    template: template,
+                                    isSelected: processor.selectedTemplate == template,
+                                    width: max(proxy.size.width / 2.5, 140)
                                 )
-                        )
-                        .cornerRadius(12)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(processor.photos.isEmpty || processor.isRendering || processor.isLoadingSelection)
+                        }
                     }
-                    .disabled(processor.photos.isEmpty || processor.isRenderingPreview)
+                    .padding(.vertical, 4)
                 }
             }
-            
-            // 加载状态指示器
-            if processor.isRenderingPreview {
-                HStack(spacing: 8) {
-                    ProgressView()
-                        .scaleEffect(0.8, anchor: .leading)
-                    Text("更新预览中…")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
-                .padding(.vertical, 8)
-            }
+            .frame(height: 150)
         }
     }
 
@@ -581,6 +556,126 @@ private struct SectionHeader: View {
                     .lineLimit(1)
             }
             Spacer()
+        }
+    }
+}
+
+private struct TemplateSegmentView: View {
+    let template: WatermarkTemplateType
+    let isSelected: Bool
+    let width: CGFloat
+    
+    private var strokeColor: Color {
+        isSelected ? Color.white.opacity(0.6) : Color.white.opacity(0.08)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            TemplateMiniPreview(template: template)
+                .frame(height: 70)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(template.displayName)
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.white)
+                Text(template.displayDescription)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .padding(12)
+        .frame(width: width, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(isSelected ? 0.12 : 0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(strokeColor, lineWidth: isSelected ? 1.5 : 1)
+        )
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+}
+
+private struct TemplateMiniPreview: View {
+    let template: WatermarkTemplateType
+    
+    private var accent: Color { Color.white.opacity(0.85) }
+    private var border: Color { Color.white.opacity(0.2) }
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.white.opacity(0.04))
+            switch template {
+            case .normal:
+                VStack(spacing: 6) {
+                    Capsule()
+                        .fill(accent)
+                        .frame(height: 8)
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(border, lineWidth: 1.5)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.1)))
+                        .frame(height: 34)
+                    HStack(spacing: 4) {
+                        ForEach(0..<4, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(accent.opacity(0.6))
+                                .frame(height: 6)
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
+            case .antiNormal:
+                VStack(spacing: 6) {
+                    HStack(spacing: 4) {
+                        ForEach(0..<4, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(accent.opacity(0.6))
+                                .frame(height: 6)
+                        }
+                    }
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(border, lineWidth: 1.5)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.1)))
+                        .frame(height: 34)
+                    Capsule()
+                        .fill(accent)
+                        .frame(height: 8)
+                }
+                .padding(.horizontal, 12)
+            case .fusion:
+                VStack(spacing: 0) {
+                    Color.white.opacity(0.2)
+                        .frame(height: 6)
+                    HStack(spacing: 0) {
+                        Color.white.opacity(0.2)
+                            .frame(width: 8)
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(border, lineWidth: 1.2)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.08)))
+                            .frame(height: 32)
+                        Color.white.opacity(0.2)
+                            .frame(width: 8)
+                    }
+                    ZStack {
+                        Color.white.opacity(0.2)
+                        HStack {
+                            Capsule()
+                                .fill(accent)
+                                .frame(width: 32, height: 8)
+                            Spacer()
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(accent.opacity(0.7))
+                                .frame(height: 6)
+                        }
+                        .padding(.horizontal, 8)
+                    }
+                    .frame(height: 26)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .padding(.horizontal, 12)
+            }
         }
     }
 }

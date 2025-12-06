@@ -30,7 +30,6 @@ final class PhotoProcessor: ObservableObject {
     @Published var isLoadingSelection = false
     @Published var selectionProgress: Double = 0.0
     @Published var selectedTemplate: WatermarkTemplateType = .normal
-    @Published var isRenderingPreview = false
 
     func loadSelectedItems() {
         guard !pickerItems.isEmpty else { return }
@@ -119,33 +118,21 @@ final class PhotoProcessor: ObservableObject {
         }
     }
     
-    func updateTemplate(_ template: WatermarkTemplateType, brand: String) {
-        guard !photos.isEmpty else { return }
+    func updateTemplate(_ template: WatermarkTemplateType) {
         selectedTemplate = template
-        isRenderingPreview = true
-        
-        Task { @MainActor [weak self] in
-            guard let self = self else { return }
-            
-            // 重新渲染当前预览照片
-            let currentPhoto = self.photos[self.currentIndex]
-            let result = await WatermarkRenderer.render(
-                image: currentPhoto.image,
-                metadata: currentPhoto.metadata,
-                brand: brand,
-                originalMetadata: currentPhoto.originalMetadata,
-                template: template
-            )
-            
-            var updatedPhotos = self.photos
-            updatedPhotos[self.currentIndex].renderedData = result
-            self.photos = updatedPhotos
-            self.isRenderingPreview = false
-        }
+        invalidateRenderedPhotos()
     }
     
     var currentPhoto: PhotoItem? {
         guard currentIndex >= 0 && currentIndex < photos.count else { return nil }
         return photos[currentIndex]
+    }
+    
+    func invalidateRenderedPhotos() {
+        guard !photos.isEmpty else { return }
+        for index in photos.indices {
+            photos[index].renderedData = nil
+        }
+        renderingProgress = 0.0
     }
 }
