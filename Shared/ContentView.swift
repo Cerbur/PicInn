@@ -376,9 +376,11 @@ private struct CarouselPreview: View {
                     .tag(index)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
             #if os(iOS)
+            .tabViewStyle(.page(indexDisplayMode: .never))
             .indexViewStyle(.page(backgroundDisplayMode: .never))
+            #else
+            .scrollTargetBehavior(.paging)
             #endif
         }
         .frame(height: previewAreaHeight)
