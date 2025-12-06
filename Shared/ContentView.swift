@@ -311,53 +311,100 @@ private struct CarouselPreview: View {
     let containerSize: CGSize
     
     private var previewAreaHeight: CGFloat {
+        #if os(iOS)
         let adjusted = containerSize.height - 260
         return min(max(adjusted, 220), 720)
+        #else
+        // macOS: 更宽敞的预览区域
+        let adjusted = containerSize.height - 220
+        return min(max(adjusted, 300), 800)
+        #endif
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             previewContent
             
             // 照片计数和索引指示器
-            HStack {
+            #if os(iOS)
+            HStack(spacing: 12) {
                 Text("\(processor.currentIndex + 1) / \(processor.photos.count)")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Spacer()
                 if processor.photos.count > 1 {
-                    #if os(iOS)
                     Text("左右滑动查看")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    #else
-                    HStack(spacing: 8) {
-                        Button {
-                            if processor.currentIndex > 0 {
-                                processor.currentIndex -= 1
-                            }
-                        } label: {
-                            Image(systemName: "chevron.left")
-                        }
-                        .disabled(processor.currentIndex == 0)
-                        
-                        Text("双指滑动或使用箭头")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Button {
-                            if processor.currentIndex < processor.photos.count - 1 {
-                                processor.currentIndex += 1
-                            }
-                        } label: {
-                            Image(systemName: "chevron.right")
-                        }
-                        .disabled(processor.currentIndex == processor.photos.count - 1)
-                    }
-                    #endif
                 }
             }
             .padding(.horizontal)
+            #else
+            // macOS: 更宽敞的布局
+            VStack(spacing: 12) {
+                // 页码指示器
+                HStack(spacing: 12) {
+                    ForEach(0..<processor.photos.count, id: \.self) { index in
+                        VStack(spacing: 6) {
+                            Text("\(index + 1)")
+                                .font(.system(size: 11, weight: index == processor.currentIndex ? .semibold : .regular))
+                                .foregroundColor(index == processor.currentIndex ? .white : .secondary)
+                            
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(index == processor.currentIndex ? Color.blue : Color.gray.opacity(0.3))
+                                .frame(height: 3)
+                        }
+                        .frame(height: 30)
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                processor.currentIndex = index
+                            }
+                        }
+                    }
+                    Spacer()
+                }
+                
+                // 控制按钮和提示文字
+                HStack(spacing: 12) {
+                    Button {
+                        if processor.currentIndex > 0 {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                processor.currentIndex -= 1
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 32, height: 32)
+                            .background(Circle().fill(Color.white.opacity(0.1)))
+                    }
+                    .disabled(processor.currentIndex == 0)
+                    
+                    Text("双指滑动或点击页码切换")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Button {
+                        if processor.currentIndex < processor.photos.count - 1 {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                processor.currentIndex += 1
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 32, height: 32)
+                            .background(Circle().fill(Color.white.opacity(0.1)))
+                    }
+                    .disabled(processor.currentIndex == processor.photos.count - 1)
+                }
+            }
+            .padding(.horizontal)
+            #endif
         }
     }
     
