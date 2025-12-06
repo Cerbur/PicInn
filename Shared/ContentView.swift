@@ -20,6 +20,7 @@ struct ContentView: View {
                             SectionHeader(icon: "photo.stack", title: "素材管理", subtitle: "批量导入并为作品添加品牌标签")
                             pickerRow
                             brandField
+                            templateSelector
                         }
                     }
                     
@@ -77,6 +78,63 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(Color.white.opacity(0.1), lineWidth: 1)
             )
+        }
+    }
+
+    private var templateSelector: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("水印模板")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            
+            HStack(spacing: 10) {
+                ForEach(WatermarkTemplateType.allCases, id: \.self) { template in
+                    Button {
+                        processor.updateTemplate(template, brand: brand.isEmpty ? "Nikon" : brand)
+                    } label: {
+                        VStack(alignment: .center, spacing: 4) {
+                            Text(template.displayName)
+                                .font(.caption2.weight(.semibold))
+                            Text(template.displayDescription)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 8)
+                        .background(
+                            processor.selectedTemplate == template
+                                ? Color(accentColor).opacity(0.2)
+                                : Color.white.opacity(0.04)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(
+                                    processor.selectedTemplate == template
+                                        ? accentColor.opacity(0.5)
+                                        : Color.white.opacity(0.1),
+                                    lineWidth: 1
+                                )
+                        )
+                        .cornerRadius(12)
+                    }
+                    .disabled(processor.photos.isEmpty || processor.isRenderingPreview)
+                }
+            }
+            
+            // 加载状态指示器
+            if processor.isRenderingPreview {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .scaleEffect(0.8, anchor: .leading)
+                    Text("更新预览中…")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(.vertical, 8)
+            }
         }
     }
 
@@ -452,7 +510,8 @@ private struct CarouselPreview: View {
                 image: photo.image,
                 metadata: photo.metadata,
                 brand: brand,
-                containerSize: maxSize
+                containerSize: maxSize,
+                template: processor.selectedTemplate
             )
             // 修正：只在生成水印任务中且当前照片还未渲染出来时显示蒙层
             if processor.isRendering && photo.renderedData == nil {
@@ -471,6 +530,7 @@ private struct WatermarkPreview: View {
     let metadata: PhotoMetadata
     let brand: String
     let containerSize: CGSize
+    let template: WatermarkTemplateType
     
     private var innerSize: CGSize {
         CGSize(
@@ -484,12 +544,11 @@ private struct WatermarkPreview: View {
             platformImage: image,
             metadata: metadata,
             brand: brand,
-            containerSize: innerSize
+            containerSize: innerSize,
+            template: template
         )
         .frame(width: innerSize.width, height: innerSize.height)
-        .padding(16)
-        // 移除阴影，确保与生成的照片完全一致
-        .frame(width: containerSize.width, height: containerSize.height)
+        .clipped()  // 确保内容被正确裁剪
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(.thickMaterial)

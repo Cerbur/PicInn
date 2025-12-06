@@ -10,13 +10,290 @@ import UIKit
 import AppKit
 #endif
 
+// MARK: - 水印模板协议
+
+protocol WatermarkTemplate {
+    var id: String { get }
+    var name: String { get }
+    var description: String { get }
+    
+    func render(
+        context: CGContext,
+        image cgImage: CGImage,
+        metadata: PhotoMetadata,
+        brand: String,
+        renderWidth: CGFloat,
+        scaleFactor: CGFloat,
+        totalHeight: CGFloat
+    ) async -> Void
+}
+
+// MARK: - 水印模板枚举
+
+enum WatermarkTemplateType: String, CaseIterable {
+    case normal = "normal"
+    case antiNormal = "antiNormal"
+    
+    var template: WatermarkTemplate {
+        switch self {
+        case .normal:
+            return NormalTemplate()
+        case .antiNormal:
+            return AntiNormalTemplate()
+        }
+    }
+    
+    var displayName: String {
+        switch self {
+        case .normal:
+            return "标准"
+        case .antiNormal:
+            return "反向"
+        }
+    }
+    
+    var displayDescription: String {
+        switch self {
+        case .normal:
+            return "品牌在上，参数在下"
+        case .antiNormal:
+            return "参数在上，品牌在下"
+        }
+    }
+}
+
+// MARK: - 标准模板（品牌在上，参数在下）
+
+struct NormalTemplate: WatermarkTemplate {
+    let id: String = "normal"
+    let name: String = "标准"
+    let description: String = "品牌在上，参数在下"
+    
+    func render(
+        context: CGContext,
+        image cgImage: CGImage,
+        metadata: PhotoMetadata,
+        brand: String,
+        renderWidth: CGFloat,
+        scaleFactor: CGFloat,
+        totalHeight: CGFloat
+    ) async {
+        let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
+        let imageAspectRatio = imageSize.width / imageSize.height
+        
+        // 计算所有尺寸
+        let imagePadding = 24 * scaleFactor
+        let containerPadding = 64 * scaleFactor
+        let topPadding = 32 * scaleFactor
+        let bottomPadding = 32 * scaleFactor
+        let brandHeight = 50 * scaleFactor
+        let paramsHeight = 30 * scaleFactor
+        let spacing = 24 * scaleFactor
+        
+        let imageWidth = renderWidth - containerPadding - (imagePadding * 2)
+        let imageHeight = imageWidth / imageAspectRatio
+        
+        // 1. 绘制品牌标签（顶部）
+        let brandCenterYFromTop = topPadding + brandHeight / 2
+        let brandText = brand.isEmpty ? metadata.cameraBrandLabel : brand
+        let brandFontSize = 26 * scaleFactor
+        
+        WatermarkRenderer.drawText(
+            context: context,
+            text: brandText,
+            fontSize: brandFontSize,
+            weight: .black,
+            at: CGPoint(x: renderWidth / 2, y: brandCenterYFromTop),
+            alignment: .center,
+            contextHeight: totalHeight
+        )
+        
+        // 2. 绘制原图（品牌下方）
+        let imageBottomY = bottomPadding + paramsHeight + spacing
+        let imageRect = CGRect(
+            x: containerPadding / 2 + imagePadding,
+            y: imageBottomY,
+            width: imageWidth,
+            height: imageHeight
+        )
+        context.draw(cgImage, in: imageRect)
+        
+        // 3. 绘制参数信息（底部）
+        let paramsCenterYFromTop = totalHeight - (bottomPadding + paramsHeight / 2)
+        let paramsFontSize = 14 * scaleFactor
+        let paramsSpacing = 16 * scaleFactor
+        let params: [(label: String, value: String)] = [
+            ("FL", metadata.focalLength),
+            ("Aperture", metadata.aperture),
+            ("Shutter", metadata.shutterSpeed),
+            ("ISO", metadata.iso.replacingOccurrences(of: "ISO", with: ""))
+        ]
+        
+        // 计算总宽度
+        var totalWidth: CGFloat = 0
+        for param in params {
+            let labelSize = WatermarkRenderer.measureText(param.label, fontSize: paramsFontSize)
+            let valueSize = WatermarkRenderer.measureText(param.value, fontSize: paramsFontSize)
+            totalWidth += labelSize.width + (4 * scaleFactor) + valueSize.width
+        }
+        totalWidth += CGFloat(params.count - 1) * paramsSpacing
+        
+        var currentX = (renderWidth - totalWidth) / 2
+        
+        for (index, param) in params.enumerated() {
+            let labelSize = WatermarkRenderer.measureText(param.label, fontSize: paramsFontSize)
+            WatermarkRenderer.drawText(
+                context: context,
+                text: param.label,
+                fontSize: paramsFontSize,
+                weight: .medium,
+                at: CGPoint(x: currentX + labelSize.width / 2, y: paramsCenterYFromTop),
+                alignment: .center,
+                contextHeight: totalHeight,
+                color: CGColor(gray: 0.5, alpha: 1)
+            )
+            currentX += labelSize.width + (4 * scaleFactor)
+            
+            let valueSize = WatermarkRenderer.measureText(param.value, fontSize: paramsFontSize)
+            WatermarkRenderer.drawText(
+                context: context,
+                text: param.value,
+                fontSize: paramsFontSize,
+                weight: .medium,
+                at: CGPoint(x: currentX + valueSize.width / 2, y: paramsCenterYFromTop),
+                alignment: .center,
+                contextHeight: totalHeight,
+                color: CGColor(gray: 0, alpha: 1)
+            )
+            currentX += valueSize.width
+            
+            if index < params.count - 1 {
+                currentX += paramsSpacing
+            }
+        }
+    }
+}
+
+// MARK: - 反向模板（参数在上，品牌在下）
+
+struct AntiNormalTemplate: WatermarkTemplate {
+    let id: String = "antiNormal"
+    let name: String = "反向"
+    let description: String = "参数在上，品牌在下"
+    
+    func render(
+        context: CGContext,
+        image cgImage: CGImage,
+        metadata: PhotoMetadata,
+        brand: String,
+        renderWidth: CGFloat,
+        scaleFactor: CGFloat,
+        totalHeight: CGFloat
+    ) async {
+        let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
+        let imageAspectRatio = imageSize.width / imageSize.height
+        
+        // 计算所有尺寸
+        let imagePadding = 24 * scaleFactor
+        let containerPadding = 64 * scaleFactor
+        let topPadding = 32 * scaleFactor
+        let bottomPadding = 32 * scaleFactor
+        let brandHeight = 50 * scaleFactor
+        let paramsHeight = 30 * scaleFactor
+        let spacing = 24 * scaleFactor
+        
+        let imageWidth = renderWidth - containerPadding - (imagePadding * 2)
+        let imageHeight = imageWidth / imageAspectRatio
+        
+        // 1. 绘制参数信息（顶部）
+        let paramsCenterYFromTop = topPadding + paramsHeight / 2
+        let paramsFontSize = 14 * scaleFactor
+        let paramsSpacing = 16 * scaleFactor
+        let params: [(label: String, value: String)] = [
+            ("FL", metadata.focalLength),
+            ("Aperture", metadata.aperture),
+            ("Shutter", metadata.shutterSpeed),
+            ("ISO", metadata.iso.replacingOccurrences(of: "ISO", with: ""))
+        ]
+        
+        // 计算总宽度
+        var totalWidth: CGFloat = 0
+        for param in params {
+            let labelSize = WatermarkRenderer.measureText(param.label, fontSize: paramsFontSize)
+            let valueSize = WatermarkRenderer.measureText(param.value, fontSize: paramsFontSize)
+            totalWidth += labelSize.width + (4 * scaleFactor) + valueSize.width
+        }
+        totalWidth += CGFloat(params.count - 1) * paramsSpacing
+        
+        var currentX = (renderWidth - totalWidth) / 2
+        
+        for (index, param) in params.enumerated() {
+            let labelSize = WatermarkRenderer.measureText(param.label, fontSize: paramsFontSize)
+            WatermarkRenderer.drawText(
+                context: context,
+                text: param.label,
+                fontSize: paramsFontSize,
+                weight: .medium,
+                at: CGPoint(x: currentX + labelSize.width / 2, y: paramsCenterYFromTop),
+                alignment: .center,
+                contextHeight: totalHeight,
+                color: CGColor(gray: 0.5, alpha: 1)
+            )
+            currentX += labelSize.width + (4 * scaleFactor)
+            
+            let valueSize = WatermarkRenderer.measureText(param.value, fontSize: paramsFontSize)
+            WatermarkRenderer.drawText(
+                context: context,
+                text: param.value,
+                fontSize: paramsFontSize,
+                weight: .medium,
+                at: CGPoint(x: currentX + valueSize.width / 2, y: paramsCenterYFromTop),
+                alignment: .center,
+                contextHeight: totalHeight,
+                color: CGColor(gray: 0, alpha: 1)
+            )
+            currentX += valueSize.width
+            
+            if index < params.count - 1 {
+                currentX += paramsSpacing
+            }
+        }
+        
+        // 2. 绘制原图（参数下方）
+        let imageBottomY = bottomPadding + brandHeight + spacing
+        let imageRect = CGRect(
+            x: containerPadding / 2 + imagePadding,
+            y: imageBottomY,
+            width: imageWidth,
+            height: imageHeight
+        )
+        context.draw(cgImage, in: imageRect)
+        
+        // 3. 绘制品牌标签（底部）
+        let brandCenterYFromTop = totalHeight - (bottomPadding + brandHeight / 2)
+        let brandText = brand.isEmpty ? metadata.cameraBrandLabel : brand
+        let brandFontSize = 26 * scaleFactor
+        
+        WatermarkRenderer.drawText(
+            context: context,
+            text: brandText,
+            fontSize: brandFontSize,
+            weight: .black,
+            at: CGPoint(x: renderWidth / 2, y: brandCenterYFromTop),
+            alignment: .center,
+            contextHeight: totalHeight
+        )
+    }
+}
+
 struct WatermarkRenderer {
     @MainActor
     static func render(
         image: PlatformImage,
         metadata: PhotoMetadata,
         brand: String,
-        originalMetadata: [AnyHashable: Any]
+        originalMetadata: [AnyHashable: Any],
+        template: WatermarkTemplateType = .normal
     ) async -> Data? {
         guard let cgImage = image.cgImageSafe else { return nil }
         
@@ -61,97 +338,17 @@ struct WatermarkRenderer {
         context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
         context.fill(CGRect(x: 0, y: 0, width: renderWidth, height: totalHeight))
         
-        // 布局顺序（从下到上，Core Graphics 坐标系）：
-        // Y=0 (底部)
-        // 1. bottomPadding
-        // 2. 参数（paramsHeight）
-        // 3. spacing
-        // 4. 图片（imageHeight）
-        // 5. spacing
-        // 6. 品牌标签（brandHeight）
-        // 7. topPadding
-        // Y=totalHeight (顶部)
-        
-        // 1. 绘制品牌标签（在照片上方，顶部）
-        let brandCenterYFromTop = topPadding + brandHeight / 2
-        let brandText = brand.isEmpty ? metadata.cameraBrandLabel : brand
-        let brandFontSize = 26 * scaleFactor
-        drawText(
+        // 使用模板来渲染内容
+        let templateInstance = template.template
+        await templateInstance.render(
             context: context,
-            text: brandText,
-            fontSize: brandFontSize,
-            weight: .black,
-            at: CGPoint(x: renderWidth / 2, y: brandCenterYFromTop),
-            alignment: .center,
-            contextHeight: totalHeight
+            image: cgImage,
+            metadata: metadata,
+            brand: brand,
+            renderWidth: renderWidth,
+            scaleFactor: scaleFactor,
+            totalHeight: totalHeight
         )
-        
-        // 2. 绘制原图（在品牌下方，参数上方）
-        let imageBottomY = bottomPadding + paramsHeight + spacing
-        let imageRect = CGRect(
-            x: containerPadding / 2 + imagePadding,
-            y: imageBottomY,
-            width: imageWidth,
-            height: imageHeight
-        )
-        context.draw(cgImage, in: imageRect)
-        
-        // 3. 绘制参数信息（在照片下方，底部）
-        let paramsCenterYFromTop = totalHeight - (bottomPadding + paramsHeight / 2)
-        let paramsY = paramsCenterYFromTop
-        let paramsFontSize = 14 * scaleFactor
-        let paramsSpacing = 16 * scaleFactor
-        let params: [(label: String, value: String)] = [
-            ("FL", metadata.focalLength),
-            ("Aperture", metadata.aperture),
-            ("Shutter", metadata.shutterSpeed),
-            ("ISO", metadata.iso.replacingOccurrences(of: "ISO", with: ""))
-        ]
-        
-        // 计算总宽度
-        var totalWidth: CGFloat = 0
-        for param in params {
-            let labelSize = measureText(param.label, fontSize: paramsFontSize)
-            let valueSize = measureText(param.value, fontSize: paramsFontSize)
-            totalWidth += labelSize.width + (4 * scaleFactor) + valueSize.width
-        }
-        totalWidth += CGFloat(params.count - 1) * paramsSpacing
-        
-        var currentX = (renderWidth - totalWidth) / 2
-        
-        for (index, param) in params.enumerated() {
-            // 绘制标签（灰色）
-            let labelSize = measureText(param.label, fontSize: paramsFontSize)
-            drawText(
-                context: context,
-                text: param.label,
-                fontSize: paramsFontSize,
-                weight: .medium,
-                at: CGPoint(x: currentX + labelSize.width / 2, y: paramsY),
-                alignment: .center,
-                contextHeight: totalHeight,
-                color: CGColor(gray: 0.5, alpha: 1)
-            )
-            currentX += labelSize.width + (4 * scaleFactor)
-            
-            // 绘制值（黑色）
-            let valueSize = measureText(param.value, fontSize: paramsFontSize)
-            drawText(
-                context: context,
-                text: param.value,
-                fontSize: paramsFontSize,
-                weight: .medium,
-                at: CGPoint(x: currentX + valueSize.width / 2, y: paramsY),
-                alignment: .center,
-                contextHeight: totalHeight,
-                color: CGColor(gray: 0, alpha: 1)
-            )
-            currentX += valueSize.width
-            
-            if index < params.count - 1 {
-                currentX += paramsSpacing
-            }
-        }
         
         // 获取最终图片
         guard let finalCGImage = context.makeImage() else { return nil }
@@ -171,7 +368,7 @@ struct WatermarkRenderer {
         return data as Data
     }
     
-    private static func measureText(_ text: String, fontSize: CGFloat) -> CGSize {
+    static func measureText(_ text: String, fontSize: CGFloat) -> CGSize {
         #if os(iOS) || os(tvOS)
         let font = UIFont.systemFont(ofSize: fontSize, weight: .medium)
         let attributes: [NSAttributedString.Key: Any] = [.font: font]
@@ -183,11 +380,11 @@ struct WatermarkRenderer {
         #endif
     }
     
-    private enum TextAlignment {
+    enum TextAlignment {
         case leading, center, trailing
     }
     
-    private static func drawText(
+    static func drawText(
         context: CGContext,
         text: String,
         fontSize: CGFloat,
@@ -276,61 +473,61 @@ struct WatermarkView: View {
     let metadata: PhotoMetadata
     let brand: String
     var containerSize: CGSize? = nil
+    var template: WatermarkTemplateType = .normal
     
     private var imageAspectRatio: CGFloat {
         platformImage.aspectRatio
     }
     
-    // 使用原始图片宽度作为基础宽度
+    // 使用原始图片宽度作为基础渲染宽度（与生成逻辑完全一致）
     private var baseRenderWidth: CGFloat {
         CGFloat(platformImage.cgImageSafe?.width ?? 1200)
     }
     
-    // 基准宽度为 1200，基于此计算缩放因子
+    // 基准宽度为 1200，基于此计算分辨率缩放因子（与生成逻辑完全一致）
     private var resolutionScaleFactor: CGFloat {
         baseRenderWidth / 1200.0
     }
     
-    private var baseImageWidth: CGFloat {
-        (baseRenderWidth - 64 * resolutionScaleFactor - (24 * 2 * resolutionScaleFactor))
+    // 计算原始布局高度（与生成逻辑一致）
+    private var baseLayoutHeight: CGFloat {
+        let topPadding = 32 * resolutionScaleFactor
+        let brandHeight = 50 * resolutionScaleFactor
+        let spacing = 24 * resolutionScaleFactor
+        let paramsHeight = 30 * resolutionScaleFactor
+        let bottomPadding = 32 * resolutionScaleFactor
+        let imagePadding = 24 * resolutionScaleFactor
+        
+        let containerPadding = 64 * resolutionScaleFactor
+        let imageWidth = baseRenderWidth - containerPadding - (imagePadding * 2)
+        let imageHeight = imageWidth / imageAspectRatio
+        
+        return topPadding + brandHeight + spacing + imageHeight + spacing + paramsHeight + bottomPadding
     }
     
-    private var baseImageHeight: CGFloat {
-        baseImageWidth / imageAspectRatio
-    }
-    
-    private var baseTotalHeight: CGFloat {
-        (32 + 50 + 24 + 30 + 32) * resolutionScaleFactor + baseImageHeight + (24 * 2) * resolutionScaleFactor
-    }
-    
-    // 使用与渲染完全相同的布局计算逻辑
-    private var scaleFactor: CGFloat {
-        guard let containerSize = containerSize else {
-            return 1.0
-        }
+    // 计算预览缩放因子（缩放整个布局以适应容器）
+    private var previewScaleFactor: CGFloat {
+        guard let containerSize = containerSize else { return 1.0 }
+        
         let widthScale = containerSize.width / baseRenderWidth
-        let heightScale = containerSize.height > 0 ? containerSize.height / baseTotalHeight : 1.0
+        let heightScale = containerSize.height > 0 ? containerSize.height / baseLayoutHeight : 1.0
         let scale = min(widthScale, heightScale, 1.0)
         return max(scale, 0.05)
     }
     
-    // 按比例缩放后的宽度
-    private var scaledWidth: CGFloat {
-        baseRenderWidth * scaleFactor
-    }
+    // 与生成代码完全相同的尺寸计算，但额外乘以预览缩放因子
+    private var topPadding: CGFloat { 32 * resolutionScaleFactor * previewScaleFactor }
+    private var bottomPadding: CGFloat { 32 * resolutionScaleFactor * previewScaleFactor }
+    private var brandHeight: CGFloat { 50 * resolutionScaleFactor * previewScaleFactor }
+    private var paramsHeight: CGFloat { 30 * resolutionScaleFactor * previewScaleFactor }
+    private var spacing: CGFloat { 24 * resolutionScaleFactor * previewScaleFactor }
+    private var imagePadding: CGFloat { 24 * resolutionScaleFactor * previewScaleFactor }
+    private var containerPadding: CGFloat { 64 * resolutionScaleFactor * previewScaleFactor }
+    private var sidePadding: CGFloat { 32 * resolutionScaleFactor * previewScaleFactor }
     
-    // 按比例缩放后的尺寸（与生成代码完全一致的计算逻辑）
-    private var scaledTopPadding: CGFloat { 32 * scaleFactor * resolutionScaleFactor }
-    private var scaledBottomPadding: CGFloat { 32 * scaleFactor * resolutionScaleFactor }
-    private var scaledBrandHeight: CGFloat { 50 * scaleFactor * resolutionScaleFactor }
-    private var scaledParamsHeight: CGFloat { 30 * scaleFactor * resolutionScaleFactor }
-    private var scaledSpacing: CGFloat { 24 * scaleFactor * resolutionScaleFactor }
-    private var scaledImagePadding: CGFloat { 24 * scaleFactor * resolutionScaleFactor }
-    private var scaledSidePadding: CGFloat { 32 * scaleFactor * resolutionScaleFactor }
-    
+    // 照片尺寸（与生成逻辑完全一致）
     private var imageWidth: CGFloat {
-        // 与生成代码完全一致：baseRenderWidth - 64 - 48
-        (baseRenderWidth - 64 * resolutionScaleFactor - (24 * 2 * resolutionScaleFactor)) * scaleFactor
+        (baseRenderWidth - 64 * resolutionScaleFactor - (24 * 2 * resolutionScaleFactor)) * previewScaleFactor
     }
     
     private var imageHeight: CGFloat {
@@ -338,48 +535,67 @@ struct WatermarkView: View {
     }
     
     private var brandFontSize: CGFloat {
-        26 * scaleFactor * resolutionScaleFactor
+        26 * resolutionScaleFactor * previewScaleFactor
     }
     
     private var paramsFontSize: CGFloat {
-        14 * scaleFactor * resolutionScaleFactor
+        14 * resolutionScaleFactor * previewScaleFactor
     }
     
     private var paramsSpacing: CGFloat {
-        16 * scaleFactor * resolutionScaleFactor
+        16 * resolutionScaleFactor * previewScaleFactor
     }
 
     var body: some View {
-        VStack(spacing: scaledSpacing) {
-            // 品牌标签（与生成代码完全一致，无阴影）
-            // 使用标准系统字体，不使用 rounded design，与生成代码一致
-            Text(brand.isEmpty ? metadata.cameraBrandLabel : brand)
-                .font(.system(size: brandFontSize, weight: .black))
-                .foregroundColor(.black)
-                .kerning(1.2 * scaleFactor)
-                .frame(height: scaledBrandHeight)
+        VStack(spacing: spacing) {
+            if template == .normal {
+                // 标准模板：品牌在上，参数在下
+                Text(brand.isEmpty ? metadata.cameraBrandLabel : brand)
+                    .font(.system(size: brandFontSize, weight: .black))
+                    .foregroundColor(.black)
+                    .kerning(1.2 * previewScaleFactor)
+                    .frame(height: brandHeight)
+                    .lineLimit(1)
 
-            // 照片（与生成代码完全一致：左右 padding 24，无阴影）
-            Image(platformImage: platformImage)
-                .resizable()
-                .aspectRatio(imageAspectRatio, contentMode: .fit)
-                .frame(width: imageWidth, height: imageHeight)
-                .padding(.horizontal, scaledImagePadding)
+                // 照片部分：保持宽高比，在可用空间内完整显示
+                Image(platformImage: platformImage)
+                    .resizable()
+                    .aspectRatio(imageAspectRatio, contentMode: .fit)
 
-            // 参数信息（与生成代码完全一致）
-            // 使用标准系统字体，不使用 rounded design，与生成代码一致
-            HStack(spacing: paramsSpacing) {
-                LabelView(title: "FL", value: metadata.focalLength, fontSize: paramsFontSize)
-                LabelView(title: "Aperture", value: metadata.aperture, fontSize: paramsFontSize)
-                LabelView(title: "Shutter", value: metadata.shutterSpeed, fontSize: paramsFontSize)
-                // ISO 值处理：移除重复的 "ISO"（与生成代码一致）
-                LabelView(title: "ISO", value: metadata.iso.replacingOccurrences(of: "ISO", with: ""), fontSize: paramsFontSize)
+                HStack(spacing: paramsSpacing) {
+                    LabelView(title: "FL", value: metadata.focalLength, fontSize: paramsFontSize)
+                    LabelView(title: "Aperture", value: metadata.aperture, fontSize: paramsFontSize)
+                    LabelView(title: "Shutter", value: metadata.shutterSpeed, fontSize: paramsFontSize)
+                    LabelView(title: "ISO", value: metadata.iso.replacingOccurrences(of: "ISO", with: ""), fontSize: paramsFontSize)
+                }
+                .font(.system(size: paramsFontSize, weight: .medium))
+                .frame(height: paramsHeight)
+            } else {
+                // 反向模板：参数在上，品牌在下
+                HStack(spacing: paramsSpacing) {
+                    LabelView(title: "FL", value: metadata.focalLength, fontSize: paramsFontSize)
+                    LabelView(title: "Aperture", value: metadata.aperture, fontSize: paramsFontSize)
+                    LabelView(title: "Shutter", value: metadata.shutterSpeed, fontSize: paramsFontSize)
+                    LabelView(title: "ISO", value: metadata.iso.replacingOccurrences(of: "ISO", with: ""), fontSize: paramsFontSize)
+                }
+                .font(.system(size: paramsFontSize, weight: .medium))
+                .frame(height: paramsHeight)
+
+                // 照片部分：保持宽高比，在可用空间内完整显示
+                Image(platformImage: platformImage)
+                    .resizable()
+                    .aspectRatio(imageAspectRatio, contentMode: .fit)
+
+                Text(brand.isEmpty ? metadata.cameraBrandLabel : brand)
+                    .font(.system(size: brandFontSize, weight: .black))
+                    .foregroundColor(.black)
+                    .kerning(1.2 * previewScaleFactor)
+                    .frame(height: brandHeight)
+                    .lineLimit(1)
             }
-            .font(.system(size: paramsFontSize, weight: .medium))
-            .frame(height: scaledParamsHeight)
         }
-        .padding(scaledSidePadding) // 与生成代码一致：四周 padding 32
-        .frame(width: scaledWidth)
+        .padding(.horizontal, containerPadding / 2)
+        .frame(maxWidth: baseRenderWidth * previewScaleFactor, maxHeight: .infinity, alignment: .top)
         .background(Color.white)
     }
 }
