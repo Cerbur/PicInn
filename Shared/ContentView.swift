@@ -309,13 +309,6 @@ private struct CarouselPreview: View {
     @ObservedObject var processor: PhotoProcessor
     let brand: String
     let containerSize: CGSize
-    @GestureState private var dragTranslation: CGFloat = 0
-    @State private var isDragging: Bool = false
-    @State private var pageWidth: CGFloat = 0
-    #if os(macOS)
-    @State private var trackpadTranslation: CGFloat = 0
-    @State private var trackpadIsDragging: Bool = false
-    #endif
     
     private var previewAreaHeight: CGFloat {
         let adjusted = containerSize.height - 260
@@ -370,66 +363,23 @@ private struct CarouselPreview: View {
     
     @ViewBuilder
     private var previewContent: some View {
-        GeometryReader { proxy in
-            let availableWidth = proxy.size.width
-            let rawWidth = max(availableWidth - 32, 220)
-            let calculatedPageWidth = min(rawWidth, availableWidth)
-            let pageHeight = previewAreaHeight
-            let baseOffset = -CGFloat(processor.currentIndex) * calculatedPageWidth
-            
-            #if os(macOS)
-            let currentTranslation = isDragging || trackpadIsDragging ? (trackpadTranslation) : 0
-            #else
-            let currentTranslation = isDragging ? dragTranslation : 0
-            #endif
-            
-            HStack(alignment: .center, spacing: 0) {
-                ForEach(Array(processor.photos.enumerated()), id: \.element.id) { _, photo in
-                    previewPage(
-                        for: photo,
-                        maxSize: CGSize(width: calculatedPageWidth, height: pageHeight)
+        TabView(selection: $processor.currentIndex) {
+            ForEach(Array(processor.photos.enumerated()), id: \.element.id) { index, photo in
+                previewPage(
+                    for: photo,
+                    maxSize: CGSize(
+                        width: UIScreen.main.bounds.width - 64,
+                        height: previewAreaHeight
                     )
-                    .frame(width: calculatedPageWidth, height: pageHeight)
-                }
-            }
-            .offset(x: baseOffset + currentTranslation)
-            .frame(width: calculatedPageWidth, alignment: .leading)
-            .clipped()
-            .frame(width: availableWidth, alignment: .center)
-            #if os(iOS)
-            .gesture(
-                DragGesture(minimumDistance: 5)
-                    .updating($dragTranslation) { value, state, _ in
-                        state = value.translation.width
-                    }
-                    .onChanged { _ in
-                        isDragging = true
-                    }
-                    .onEnded { value in
-                        isDragging = false
-                        handleDragEnd(
-                            translation: value.translation.width,
-                            velocity: value.predictedEndLocation.x - value.location.x,
-                            pageWidth: calculatedPageWidth
-                        )
-                    }
-            )
-            #else
-            .overlay(
-                TrackpadGestureBridge(
-                    onChanged: { translation in
-                        trackpadIsDragging = true
-                        trackpadTranslation = translation
-                    },
-                    onEnded: { translation in
-                        trackpadIsDragging = false
-                        handleDragEnd(translation: translation, velocity: 0, pageWidth: calculatedPageWidth)
-                    }
                 )
-            )
-            #endif
+                .tag(index)
+            }
         }
         .frame(height: previewAreaHeight)
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        #if os(iOS)
+        .indexViewStyle(.page(backgroundDisplayMode: .never))
+        #endif
     }
     
     @ViewBuilder
@@ -450,54 +400,6 @@ private struct CarouselPreview: View {
                     )
             }
         }
-    }
-    
-    private func handleDragEnd(translation: CGFloat, velocity: CGFloat, pageWidth: CGFloat) {
-        // 速度阈值：像素/毫秒
-        let velocityThreshold: CGFloat = 0.5
-        let isQuickSwipe = abs(velocity) > velocityThreshold
-        
-        // 拖动阈值：页面宽度的百分比
-        let dragThreshold = pageWidth * 0.3
-        
-        var newIndex = processor.currentIndex
-        
-        if isQuickSwipe {
-            // 快速滑动：根据方向直接切换
-            if velocity > 0 {
-                // 向右快速滑动 -> 上一张
-                newIndex = max(processor.currentIndex - 1, 0)
-            } else {
-                // 向左快速滑动 -> 下一张
-                newIndex = min(processor.currentIndex + 1, processor.photos.count - 1)
-            }
-        } else {
-            // 缓慢拖动：根据阈值判断
-            if translation < -dragThreshold {
-                // 向左拖动超过阈值 -> 下一张
-                newIndex = min(processor.currentIndex + 1, processor.photos.count - 1)
-            } else if translation > dragThreshold {
-                // 向右拖动超过阈值 -> 上一张
-                newIndex = max(processor.currentIndex - 1, 0)
-            }
-        }
-        
-        // 使用动画改变索引
-        withAnimation(.easeInOut(duration: 0.25)) {
-            processor.currentIndex = newIndex
-        }
-        
-        // macOS 平台恢复拖动偏移
-        #if os(macOS)
-        withAnimation(.easeOut(duration: 0.2)) {
-            trackpadTranslation = 0
-        }
-        #endif
-    }
-    
-    private func clamp(_ value: CGFloat, limit: CGFloat) -> CGFloat {
-        guard limit > 0 else { return value }
-        return min(max(value, -limit), limit)
     }
 }
 
